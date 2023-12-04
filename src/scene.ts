@@ -24,9 +24,12 @@ import { toggleFullScreen } from './helpers/fullscreen'
 import { resizeRendererToDisplaySize } from './helpers/responsiveness'
 import './style.css'
 
-import systems from './systems.json' ;
+import system from './system.json' ;
 
-console.log(systems)
+console.log(system)
+console.log(system.name)
+console.log(system.SystemCenter)
+console.log(system.SystemCenter?.children)
 
 const CANVAS_ID = 'scene'
 
