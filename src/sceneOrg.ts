@@ -1,3 +1,4 @@
+/* 
 import GUI from 'lil-gui'
 import {
   AmbientLight,
@@ -17,16 +18,13 @@ import {
   Scene,
   WebGLRenderer,
 } from 'three'
+import { DragControls } from 'three/examples/jsm/controls/DragControls'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import Stats from 'three/examples/jsm/libs/stats.module'
 import * as animations from './helpers/animations'
 import { toggleFullScreen } from './helpers/fullscreen'
 import { resizeRendererToDisplaySize } from './helpers/responsiveness'
 import './style.css'
-
-import systems from './systems.json' ;
-
-console.log(systems)
 
 const CANVAS_ID = 'scene'
 
@@ -39,6 +37,7 @@ let pointLight: PointLight
 let cube: Mesh
 let camera: PerspectiveCamera
 let cameraControls: OrbitControls
+let dragControls: DragControls
 let axesHelper: AxesHelper
 let pointLightHelper: PointLightHelper
 let clock: Clock
@@ -139,7 +138,29 @@ function init() {
     cameraControls.autoRotate = false
     cameraControls.update()
 
-    
+    dragControls = new DragControls([cube], camera, renderer.domElement)
+    dragControls.addEventListener('hoveron', (event) => {
+      event.object.material.emissive.set('orange')
+    })
+    dragControls.addEventListener('hoveroff', (event) => {
+      event.object.material.emissive.set('black')
+    })
+    dragControls.addEventListener('dragstart', (event) => {
+      cameraControls.enabled = false
+      animation.play = false
+      event.object.material.emissive.set('black')
+      event.object.material.opacity = 0.7
+      event.object.material.needsUpdate = true
+    })
+    dragControls.addEventListener('dragend', (event) => {
+      cameraControls.enabled = true
+      animation.play = true
+      event.object.material.emissive.set('black')
+      event.object.material.opacity = 1
+      event.object.material.needsUpdate = true
+    })
+    dragControls.enabled = false
+
     // Full screen
     window.addEventListener('dblclick', (event) => {
       if (event.target === canvas) {
@@ -190,6 +211,9 @@ function init() {
     cubeOneFolder.add(cube.rotation, 'z', -Math.PI * 2, Math.PI * 2, Math.PI / 4).name('rotate z')
 
     cubeOneFolder.add(animation, 'enabled').name('animated')
+
+    const controlsFolder = gui.addFolder('Controls')
+    controlsFolder.add(dragControls, 'enabled').name('drag controls')
 
     const lightsFolder = gui.addFolder('Lights')
     lightsFolder.add(pointLight, 'visible').name('point light')
@@ -243,3 +267,4 @@ function animate() {
 
   renderer.render(scene, camera)
 }
+*/
