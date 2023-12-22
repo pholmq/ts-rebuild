@@ -1,3 +1,5 @@
+//The Tychosium
+
 import GUI from 'lil-gui'
 import {
   AmbientLight,
