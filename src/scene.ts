@@ -1,4 +1,4 @@
-//The Tychosium
+//The Tychosium rebuild
 
 import GUI from 'lil-gui'
 import {
