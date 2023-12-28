@@ -1,8 +1,10 @@
+// @ts-nocheck
 /*Copyright 2018 Simon Shack, Patrik Holmqvist
 The TYCHOSIUM is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.*/
 
 import { saveAs } from 'file-saver';
-
+import * as dat from 'dat.gui';
+import * as THREE from 'three';
 
 //*******************************************************************************
 //CAUTION CHANGE ONLY defaultSettings!!!! 
@@ -456,7 +458,7 @@ var earth = {
   containerObj:"",
   orbitObj:"",
   planetObj:"",
-  pivotObj:"",
+  pivotObj:<THREE.Object3D>null,
   axisHelper: true,
   
   traceLength : sYear * 18,
@@ -484,7 +486,7 @@ var moonDef = {
   orbitTiltb: 0.2,
 
   visible: false,
-  containerObj:"",
+  containerObj:<THREE.Object3D>null,
   orbitObj:"",
   planetObj:"",
   pivotObj:"",
@@ -539,7 +541,7 @@ var moon = {
   containerObj:"",
   orbitObj:"",
   planetObj:"",
-  pivotObj:"",
+  pivotObj: "",
   axisHelper: true,
   
   traceLength : sYear * 18,
@@ -568,10 +570,10 @@ var sunDef = {
   orbitTiltb: 0,
 
   visible: false,
-  containerObj:"",
+  containerObj:<THREE.Object3D> null,
   orbitObj:"",
   planetObj:"",
-  pivotObj:"",
+  pivotObj:<THREE.Object3D> null,
   axisHelper: false,
   isDeferent: true,
 };
@@ -596,7 +598,7 @@ var sun = {
   textureTransparency: 9,
   visible: true,
   emissive: true,
-  containerObj:"",
+  containerObj:<THREE.Object3D> null,
   orbitObj:"",
   planetObj:"",
   pivotObj:"",
@@ -1396,7 +1398,9 @@ var o = {
     let input = document.createElement('input');
     input.type = 'file';
     input.onchange = e => { 
-      let file = e.target.files[0]; 
+      
+      // let file = e.target.files[0]; 
+      let file = (e.target as HTMLInputElement).files[0]; 
       var reader = new FileReader();
       reader.readAsText(file,'UTF-8');
 
@@ -1404,7 +1408,7 @@ var o = {
       reader.onload = readerEvent => {
         let content = readerEvent.target.result; // this is the content!
         console.log(content)
-        let jsonObj = JSON.parse(content);
+        let jsonObj = JSON.parse(content as string);
         planets.forEach(obj => {
           let newVals = jsonObj.find(obj2 => {
             return obj.name === obj2.name
@@ -1413,7 +1417,6 @@ var o = {
           updatePlanet(obj)
           initTrace(obj)
         });
-        gui.remove()
         setupGUI()
       }
     }
@@ -1511,7 +1514,7 @@ document.body.appendChild(renderer.domElement);
 
 // INIT XRING GEOMETRY AND CROSS ORIGIN TEXTURE LOADING
 initXRingGeometry();
-THREE.ImageUtils.crossOrigin = '';
+// THREE.ImageUtils.crossOrigin = '';
 
 
 //*************************************************************
@@ -1521,7 +1524,7 @@ createPlanet(earth);
 createPlanet(moonDef);
 createPlanet(moonDefB);
 createPlanet(moon);
-moon.planetObj.rotation.y = Math.PI //quick fix so that the Moon texture is turned towards Earth
+// moon.planetObj.rotation.y = Math.PI //quick fix so that the Moon texture is turned towards Earth
 createPlanet(sunDef);
 createPlanet(sun);
 createPlanet(venusDef);
@@ -1997,11 +2000,9 @@ light.shadow.radius = 2;
 //*************************************************************
 setupGUI()
 function setupGUI() {
-  // console.log(gui)
-  // if (gui) {
-  //     gui.destroy(); 
-  // } else {
-  // }
+  if (gui) {
+      gui.remove;
+  } 
   //var gui = new dat.GUI( { autoPlace: false } );
   var gui = new dat.GUI();
   gui.domElement.id = 'gui';
@@ -3180,7 +3181,7 @@ function createStarfield() {
 
   geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
 
-  material = new THREE.PointsMaterial( { color: 0x888888, size: 0.05, sizeAttenuation: false} );
+  const material = new THREE.PointsMaterial( { color: 0x888888, size: 0.05, sizeAttenuation: false} );
   //material = new THREE.PointsMaterial( { color: 0xffffff, size: 0.01 } );
   particles = new THREE.Points(geometry, material);
   scene.add( particles );
