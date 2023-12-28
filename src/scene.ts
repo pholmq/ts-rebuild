@@ -6,7 +6,7 @@ import { saveAs } from 'file-saver';
 import * as dat from 'dat.gui';
 import * as THREE from 'three';
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-
+import Stats from 'three/examples/jsm/libs/stats.module'
 //*******************************************************************************
 //CAUTION CHANGE ONLY defaultSettings!!!! 
 //THESE VALUES WILL OVERRIDE THOSE IN THE PLANETS.
