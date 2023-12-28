@@ -2331,7 +2331,7 @@ document.body.appendChild( stats.dom )
 if (!o.Perfomance) stats.dom.style.visibility = 'hidden';
 
 // stats.dom.container.style.visibility = 'hidden';
-const clock = new THREE.Clock(); 
+// const clock = new THREE.Clock(); 
 
 window.addEventListener('resize', onWindowResize, false);
 onWindowResize();
