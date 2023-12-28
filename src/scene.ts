@@ -1499,7 +1499,7 @@ planets.forEach(obj => {
 
 
 
-
+THREE.ColorManagement.enabled = true;
 
 
 const scene = new THREE.Scene();
@@ -1934,8 +1934,8 @@ function showHideCameraHelper () {
 //SETUP LIGHT
 //*************************************************************
 
-const ambientLight = new THREE.AmbientLight( 0xffffff, o.ambientLight ); // soft white light
-// const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+// const ambientLight = new THREE.AmbientLight( 0xffffff, o.ambientLight ); // soft white light
+const ambientLight = new THREE.AmbientLight(0xffffff, 3);
 scene.add(ambientLight);
 
 const light = new THREE.PointLight( 0xffffff, o.sunLight, 0 );
@@ -3007,17 +3007,21 @@ function createPlanet (pd) { //pd = Planet Data
     if (pd.planetColor) { //Halleys
       planetMesh = new THREE.MeshPhongMaterial({color: pd.planetColor, emissive: pd.planetColor, emissiveIntensity: 2});
     } else {
-      planetMesh = new THREE.MeshPhongMaterial({color: pd.color});
+      // planetMesh = new THREE.MeshPhongMaterial({color: pd.color});
+      // planetMesh = new THREE.MeshPhongMaterial();
+      planetMesh = new THREE.MeshNormalMaterial();
     }
   }
   
   if (pd.textureUrl) {
     const texture = new THREE.TextureLoader().load(pd.textureUrl)
+    texture.colorSpace = THREE.SRGBColorSpace;
     if (pd.textureTransparency) {
       planetMesh = new THREE.MeshPhongMaterial({ map: texture, bumpScale: 0.05, specular: new THREE.Color('#190909'), transparent: true, opacity: pd.textureTransparency, });
 
     } else {
       planetMesh = new THREE.MeshPhongMaterial({ map: texture, bumpScale: 0.05, specular: new THREE.Color('#190909') });
+      // planetMesh = new THREE.MeshPhongMaterial({ map: texture});
     }
 
   }
