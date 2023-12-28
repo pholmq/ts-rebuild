@@ -2580,7 +2580,7 @@ function setTraceMaterial(obj) {
 
 function tracePlanet(obj, pos) {
   let update = false;
-  if (!obj.traceOn || !o.traceBtn) { obj.traceLine.visible = false; return;}
+  if (!obj.traceOn || !o.traceBtn) { obj.traceLine = false; return;}
   if (pos < obj.traceStartPos) {initTrace(obj); update = true}
   if (pos < obj.traceCurrPos) {obj.traceCurrPos = obj.traceStartPos; obj.traceArrIndex = 0; update = true}
   if (obj.traceCurrPos + obj.traceStep > pos && !update) return;
@@ -2964,7 +2964,7 @@ function getElongationFromSun(targetPlanet)
 	
   var numerator=(Math.pow(earthSunDistance,2)+Math.pow(earthTargetPlanetDistance,2))-Math.pow(sunTargetPlanetDistance,2);
   var denominator=2.0*earthSunDistance*earthTargetPlanetDistance;
-  elongationRadians=Math.acos(numerator/denominator);
+  const elongationRadians=Math.acos(numerator/denominator);
   return (180.0*elongationRadians)/Math.PI;
 };
 
