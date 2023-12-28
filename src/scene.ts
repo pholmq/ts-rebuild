@@ -454,7 +454,8 @@ var earth = {
   orbitTilta: 0,
   orbitTiltb: 0,  
 
-  textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/EarthDay.jpg',
+  // textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/EarthDay.jpg',
+  textureUrl: "textures/8k_earth_daymap.jpg",
   visible: true,
   containerObj:"",
   orbitObj:"",
@@ -1507,9 +1508,11 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color( o.background );
 
 
-const renderer = new THREE.WebGLRenderer({antialias: true});
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
+const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFSoftShadowMap
+
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild(renderer.domElement);
 
@@ -1931,7 +1934,7 @@ function showHideCameraHelper () {
 //SETUP LIGHT
 //*************************************************************
 
-const ambientLight = new THREE.AmbientLight( 0x404040, o.ambientLight ); // soft white light
+const ambientLight = new THREE.AmbientLight( 0xffffff, o.ambientLight ); // soft white light
 // const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
 scene.add(ambientLight);
 
@@ -2982,22 +2985,22 @@ function updateElongations()
 //CREATE PLANETS
 
 function createPlanet (pd) { //pd = Planet Data
-  var orbitContainer = new THREE.Object3D();
+  const orbitContainer = new THREE.Object3D();
   orbitContainer.rotation.x = pd.orbitTilta * (Math.PI/180);
   orbitContainer.rotation.z = pd.orbitTiltb * (Math.PI/180);
   orbitContainer.position.x = pd.orbitCentera;
   orbitContainer.position.z = pd.orbitCenterb;
   orbitContainer.position.y = pd.orbitCenterc;
   
-  let orbit = new THREE.Object3D();
-  let geometry = new THREE.CircleGeometry(pd.orbitRadius, 100);
+  const orbit = new THREE.Object3D();
+  const geometry = new THREE.CircleGeometry(pd.orbitRadius, 100);
   // geometry.vertices.shift();
   
-  var line = new THREE.LineLoop( geometry, new THREE.LineBasicMaterial({color: pd.color, transparent: true, opacity : 0.4} ));
+  const line = new THREE.LineLoop( geometry, new THREE.LineBasicMaterial({color: pd.color, transparent: true, opacity : 0.4} ));
   line.rotation.x = Math.PI/2;
   orbit.add(line);
 
-  var planetMesh
+  let planetMesh
   if (pd.emissive) {
     planetMesh = new THREE.MeshPhongMaterial({color: pd.color, emissive: pd.color, emissiveIntensity: 2});
   } else {

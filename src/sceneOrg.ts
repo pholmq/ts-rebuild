@@ -1,4 +1,4 @@
-/* 
+
 import GUI from 'lil-gui'
 import {
   AmbientLight,
@@ -21,9 +21,6 @@ import {
 import { DragControls } from 'three/examples/jsm/controls/DragControls'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import Stats from 'three/examples/jsm/libs/stats.module'
-import * as animations from './helpers/animations'
-import { toggleFullScreen } from './helpers/fullscreen'
-import { resizeRendererToDisplaySize } from './helpers/responsiveness'
 import './style.css'
 
 const CANVAS_ID = 'scene'
@@ -138,35 +135,7 @@ function init() {
     cameraControls.autoRotate = false
     cameraControls.update()
 
-    dragControls = new DragControls([cube], camera, renderer.domElement)
-    dragControls.addEventListener('hoveron', (event) => {
-      event.object.material.emissive.set('orange')
-    })
-    dragControls.addEventListener('hoveroff', (event) => {
-      event.object.material.emissive.set('black')
-    })
-    dragControls.addEventListener('dragstart', (event) => {
-      cameraControls.enabled = false
-      animation.play = false
-      event.object.material.emissive.set('black')
-      event.object.material.opacity = 0.7
-      event.object.material.needsUpdate = true
-    })
-    dragControls.addEventListener('dragend', (event) => {
-      cameraControls.enabled = true
-      animation.play = true
-      event.object.material.emissive.set('black')
-      event.object.material.opacity = 1
-      event.object.material.needsUpdate = true
-    })
-    dragControls.enabled = false
 
-    // Full screen
-    window.addEventListener('dblclick', (event) => {
-      if (event.target === canvas) {
-        toggleFullScreen(canvas)
-      }
-    })
   }
 
   // ===== 🪄 HELPERS =====
@@ -252,19 +221,9 @@ function animate() {
 
   stats.update()
 
-  if (animation.enabled && animation.play) {
-    animations.rotate(cube, clock, Math.PI / 3)
-    animations.bounce(cube, clock, 1, 0.5, 0.5)
-  }
-
-  if (resizeRendererToDisplaySize(renderer)) {
-    const canvas = renderer.domElement
-    camera.aspect = canvas.clientWidth / canvas.clientHeight
-    camera.updateProjectionMatrix()
-  }
-
+  
+  
   cameraControls.update()
 
   renderer.render(scene, camera)
 }
-*/
