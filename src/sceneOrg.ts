@@ -1,4 +1,5 @@
 
+/*
 import GUI from 'lil-gui'
 import {
   AmbientLight,
@@ -227,3 +228,4 @@ function animate() {
 
   renderer.render(scene, camera)
 }
+*/
