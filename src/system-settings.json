@@ -1,5 +1,21 @@
 [
   {
+    "name": "SystemCenter",
+    "size": 0.5,
+    "containerPos": -90,
+    "startPos": 0,
+    "speed": 0,
+    "rotationSpeed": 0,
+    "tilt": 0,
+    "tiltb": 0,
+    "orbitRadius": 0,
+    "orbitCentera": 0,
+    "orbitCenterb": 0,
+    "orbitCenterc": 0,
+    "orbitTilta": 0,
+    "orbitTiltb": 0
+  },
+  {
     "name": "Earth",
     "size": 4,
     "startPos": 0,
