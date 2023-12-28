@@ -1513,7 +1513,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
 document.body.appendChild(renderer.domElement);
 
 // INIT XRING GEOMETRY AND CROSS ORIGIN TEXTURE LOADING
-initXRingGeometry();
+// initXRingGeometry();
 // THREE.ImageUtils.crossOrigin = '';
 
 
@@ -2990,7 +2990,7 @@ function createPlanet (pd) { //pd = Planet Data
   
   var orbit = new THREE.Object3D();
   var geometry = new THREE.CircleGeometry(pd.orbitRadius, 100);
-  geometry.vertices.shift();
+  // geometry.vertices.shift();
   
   var line = new THREE.LineLoop( geometry, new THREE.LineBasicMaterial({color: pd.color, transparent: true, opacity : 0.4} ));
   line.rotation.x = Math.PI/2;
@@ -3019,10 +3019,10 @@ function createPlanet (pd) { //pd = Planet Data
   }
   if (pd.sphereSegments) {
     var planet = new THREE.Mesh(
-    new THREE.SphereBufferGeometry(pd.size, pd.sphereSegments, pd.sphereSegments), planetMesh);  
+    new THREE.SphereGeometry(pd.size, pd.sphereSegments, pd.sphereSegments), planetMesh);  
   } else {
     var planet = new THREE.Mesh(
-    new THREE.SphereBufferGeometry(pd.size, 32, 32), planetMesh);
+    new THREE.SphereGeometry(pd.size, 32, 32), planetMesh);
   }
 
   var pivot = new THREE.Object3D();
@@ -3036,14 +3036,14 @@ function createPlanet (pd) { //pd = Planet Data
     rotationAxis.rotation.x = pd.tiltb * (Math.PI/180)
   }
 
-  if (pd.ringUrl) {
-    var texloader = new THREE.TextureLoader();
-    texloader.load(pd.ringUrl, function(tex) {
-      const ring = createRings(pd.ringSize, 32, tex)
-      rotationAxis.add(ring);
-      pd.ringObj = ring;
-    });
-  };
+  // if (pd.ringUrl) {
+  //   var texloader = new THREE.TextureLoader();
+  //   texloader.load(pd.ringUrl, function(tex) {
+  //     const ring = createRings(pd.ringSize, 32, tex)
+  //     rotationAxis.add(ring);
+  //     pd.ringObj = ring;
+  //   });
+  // };
   rotationAxis.add(planet);
 
   // const nameTag = createLabel(pd.name);
@@ -3196,98 +3196,98 @@ function setStarDistance() {
 
 
 
-function createRings(radius, segments, texture) {
-  return new THREE.Mesh(new THREE.XRingGeometry(1.2 * radius, 2 * radius, 2 * segments, 5, 0, Math.PI * 2), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true, opacity: 0.6 })); 
-}
+// function createRings(radius, segments, texture) {
+//   return new THREE.Mesh(new THREE.XRingGeometry(1.2 * radius, 2 * radius, 2 * segments, 5, 0, Math.PI * 2), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true, opacity: 0.6 })); 
+// }
 
-function initXRingGeometry() {
-  /**
- * @author Kaleb Murphy
- * Modified uvs.push on line no. 42.
- */
+// function initXRingGeometry() {
+//   /**
+//  * @author Kaleb Murphy
+//  * Modified uvs.push on line no. 42.
+//  */
   
- //This allows textures to be added to a disc in a way that makes planetary ring look nice
-  THREE.XRingGeometry = function ( innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength ) {
+//  //This allows textures to be added to a disc in a way that makes planetary ring look nice
+//   THREE.XRingGeometry = function ( innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength ) {
 
-    THREE.Geometry.call( this );
+//     THREE.Geometry.call( this );
 
-    this.type = 'XRingGeometry';
+//     this.type = 'XRingGeometry';
 
-    this.parameters = {
-      innerRadius: innerRadius,
-      outerRadius: outerRadius,
-      thetaSegments: thetaSegments,
-      phiSegments: phiSegments,
-      thetaStart: thetaStart,
-      thetaLength: thetaLength
-    };
+//     this.parameters = {
+//       innerRadius: innerRadius,
+//       outerRadius: outerRadius,
+//       thetaSegments: thetaSegments,
+//       phiSegments: phiSegments,
+//       thetaStart: thetaStart,
+//       thetaLength: thetaLength
+//     };
 
-    innerRadius = innerRadius || 0;
-    outerRadius = outerRadius || 50;
+//     innerRadius = innerRadius || 0;
+//     outerRadius = outerRadius || 50;
 
-    thetaStart = thetaStart !== undefined ? thetaStart : 0;
-    thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2;
+//     thetaStart = thetaStart !== undefined ? thetaStart : 0;
+//     thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2;
 
-    thetaSegments = thetaSegments !== undefined ? Math.max( 3, thetaSegments ) : 8;
-    phiSegments = phiSegments !== undefined ? Math.max( 1, phiSegments ) : 8;
+//     thetaSegments = thetaSegments !== undefined ? Math.max( 3, thetaSegments ) : 8;
+//     phiSegments = phiSegments !== undefined ? Math.max( 1, phiSegments ) : 8;
 
-    var i, o, uvs = [], radius = innerRadius, radiusStep = ( ( outerRadius - innerRadius ) / phiSegments );
+//     var i, o, uvs = [], radius = innerRadius, radiusStep = ( ( outerRadius - innerRadius ) / phiSegments );
 
-    for ( i = 0; i < phiSegments + 1; i ++ ) { // concentric circles inside ring
+//     for ( i = 0; i < phiSegments + 1; i ++ ) { // concentric circles inside ring
 
-      for ( o = 0; o < thetaSegments + 1; o ++ ) { // number of segments per circle
+//       for ( o = 0; o < thetaSegments + 1; o ++ ) { // number of segments per circle
 
-        var vertex = new THREE.Vector3();
-        var segment = thetaStart + o / thetaSegments * thetaLength;
-        vertex.x = radius * Math.cos( segment );
-        vertex.z = radius * Math.sin( segment );
+//         var vertex = new THREE.Vector3();
+//         var segment = thetaStart + o / thetaSegments * thetaLength;
+//         vertex.x = radius * Math.cos( segment );
+//         vertex.z = radius * Math.sin( segment );
 
-        this.vertices.push( vertex );
-        // uvs.push( new THREE.Vector2( ( vertex.x / outerRadius + 1 ) / 2, ( vertex.y / outerRadius + 1 ) / 2 ) );
-        uvs.push( new THREE.Vector2( o / thetaSegments, i / phiSegments ) );
-      }
+//         this.vertices.push( vertex );
+//         // uvs.push( new THREE.Vector2( ( vertex.x / outerRadius + 1 ) / 2, ( vertex.y / outerRadius + 1 ) / 2 ) );
+//         uvs.push( new THREE.Vector2( o / thetaSegments, i / phiSegments ) );
+//       }
 
-      radius += radiusStep;
+//       radius += radiusStep;
 
-    }
+//     }
 
-    var n = new THREE.Vector3( 1, 0, 0 );
+//     var n = new THREE.Vector3( 1, 0, 0 );
 
-    for ( i = 0; i < phiSegments; i ++ ) { // concentric circles inside ring
+//     for ( i = 0; i < phiSegments; i ++ ) { // concentric circles inside ring
 
-      var thetaSegment = i * (thetaSegments + 1);
+//       var thetaSegment = i * (thetaSegments + 1);
 
-      for ( o = 0; o < thetaSegments ; o ++ ) { // number of segments per circle
+//       for ( o = 0; o < thetaSegments ; o ++ ) { // number of segments per circle
 
-        var segment = o + thetaSegment;
+//         var segment = o + thetaSegment;
 
-        var v1 = segment;
-        var v2 = segment + thetaSegments + 1;
-        var v3 = segment + thetaSegments + 2;
+//         var v1 = segment;
+//         var v2 = segment + thetaSegments + 1;
+//         var v3 = segment + thetaSegments + 2;
 
-        this.faces.push( new THREE.Face3( v1, v2, v3, [ n.clone(), n.clone(), n.clone() ] ) );
-        this.faceVertexUvs[ 0 ].push( [ uvs[ v1 ].clone(), uvs[ v2 ].clone(), uvs[ v3 ].clone() ]);
+//         this.faces.push( new THREE.Face3( v1, v2, v3, [ n.clone(), n.clone(), n.clone() ] ) );
+//         this.faceVertexUvs[ 0 ].push( [ uvs[ v1 ].clone(), uvs[ v2 ].clone(), uvs[ v3 ].clone() ]);
 
-        v1 = segment;
-        v2 = segment + thetaSegments + 2;
-        v3 = segment + 1;
+//         v1 = segment;
+//         v2 = segment + thetaSegments + 2;
+//         v3 = segment + 1;
 
-        this.faces.push( new THREE.Face3( v1, v2, v3, [ n.clone(), n.clone(), n.clone() ] ) );
-        this.faceVertexUvs[ 0 ].push( [ uvs[ v1 ].clone(), uvs[ v2 ].clone(), uvs[ v3 ].clone() ]);
+//         this.faces.push( new THREE.Face3( v1, v2, v3, [ n.clone(), n.clone(), n.clone() ] ) );
+//         this.faceVertexUvs[ 0 ].push( [ uvs[ v1 ].clone(), uvs[ v2 ].clone(), uvs[ v3 ].clone() ]);
 
-      }
-    }
+//       }
+//     }
 
-    this.computeFaceNormals();
+//     this.computeFaceNormals();
 
-    this.boundingSphere = new THREE.Sphere( new THREE.Vector3(), radius );
+//     this.boundingSphere = new THREE.Sphere( new THREE.Vector3(), radius );
 
-  };
+//   };
 
-  THREE.XRingGeometry.prototype = Object.create( THREE.Geometry.prototype );
-  THREE.XRingGeometry.prototype.constructor = THREE.XRingGeometry;
+//   THREE.XRingGeometry.prototype = Object.create( THREE.Geometry.prototype );
+//   THREE.XRingGeometry.prototype.constructor = THREE.XRingGeometry;
 
-}
+// }
 
 // function makeTextSprite( message, parameters )
 //     {
