@@ -1,6 +1,5 @@
 [
   {
-    "id": "",
     "name": "Earth",
     "size": 4,
     "startPos": 0,
@@ -16,7 +15,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Moon deferent A",
     "size": 0.6,
     "startPos": 226.4,
@@ -30,7 +28,6 @@
     "orbitTiltb": 0.5
   },
   {
-    "id": "",
     "name": "Moon deferent B",
     "size": 0.6,
     "startPos": -1.8,
@@ -44,7 +41,6 @@
     "orbitTiltb": 2.6
   },
   {
-    "id": "",
     "name": "Moon",
     "size": 1,
     "startPos": 261.2,
@@ -59,7 +55,6 @@
     "orbitTiltb": -2.6
   },
   {
-    "id": "",
     "name": "Sun deferent",
     "size": 2,
     "startPos": 0,
@@ -73,7 +68,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Sun",
     "size": 7,
     "startPos": 0,
@@ -88,7 +82,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Mercury def A",
     "size": 0.7,
     "startPos": 0,
@@ -102,7 +95,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Mercury def B",
     "size": 0.7,
     "startPos": 33,
@@ -116,7 +108,6 @@
     "orbitTiltb": 0.5
   },
   {
-    "id": "",
     "name": "Mercury",
     "size": 1.53,
     "startPos": -180.8,
@@ -130,7 +121,6 @@
     "orbitTiltb": 0.5
   },
   {
-    "id": "",
     "name": "Venus deferent A",
     "size": 2,
     "startPos": 0,
@@ -144,7 +134,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Venus deferent B",
     "size": 2,
     "startPos": 16.6,
@@ -158,7 +147,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Venus",
     "size": 3.8,
     "startPos": -23.6,
@@ -172,7 +160,6 @@
     "orbitTiltb": -0.05
   },
   {
-    "id": "",
     "name": "Mars E deferent",
     "size": 2,
     "startPos": 1,
@@ -186,7 +173,6 @@
     "orbitTiltb": 1
   },
   {
-    "id": "",
     "name": "Mars S deferent",
     "size": 2,
     "startPos": -595,
@@ -200,7 +186,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Mars",
     "size": 2.13,
     "startPos": 599,
@@ -215,7 +200,6 @@
     "orbitTiltb": 1
   },
   {
-    "id": "",
     "name": "Phobos",
     "size": 0.5,
     "startPos": 122,
@@ -230,7 +214,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Deimos",
     "size": 0.5,
     "startPos": 0,
@@ -245,7 +228,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Jupiter deferent",
     "size": 1,
     "startPos": 53,
@@ -260,7 +242,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Jupiter",
     "size": 15,
     "startPos": -11,
@@ -275,7 +256,6 @@
     "orbitTiltb": -1.15
   },
   {
-    "id": "",
     "name": "Saturn deferent",
     "size": 1,
     "startPos": 509,
@@ -290,7 +270,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Saturn",
     "size": 6.5,
     "startPos": -113.5,
@@ -305,7 +284,6 @@
     "orbitTiltb": 0.5
   },
   {
-    "id": "",
     "name": "Uranus deferent",
     "size": 1,
     "startPos": 120.5,
@@ -320,7 +298,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Uranus",
     "size": 7.5,
     "startPos": 375,
@@ -335,7 +312,6 @@
     "orbitTiltb": -0.6
   },
   {
-    "id": "",
     "name": "Neptune deferent",
     "size": 1,
     "startPos": 175.2,
@@ -350,7 +326,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Neptune",
     "size": 7.5,
     "startPos": 329.3,
@@ -365,7 +340,6 @@
     "orbitTiltb": 1.15
   },
   {
-    "id": "",
     "name": "Halleys deferent",
     "size": 1,
     "startPos": 179,
@@ -380,7 +354,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Halleys",
     "size": 2,
     "startPos": 76.33,
@@ -395,7 +368,6 @@
     "orbitTiltb": 18.55
   },
   {
-    "id": "",
     "name": "Eros deferent A",
     "size": 2,
     "startPos": 0,
@@ -409,7 +381,6 @@
     "orbitTiltb": 3.6
   },
   {
-    "id": "",
     "name": "Eros deferent B",
     "size": 2,
     "startPos": 0,
@@ -423,7 +394,6 @@
     "orbitTiltb": 0
   },
   {
-    "id": "",
     "name": "Eros",
     "size": 0.7,
     "startPos": 171.8,
