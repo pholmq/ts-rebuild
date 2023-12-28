@@ -2989,8 +2989,8 @@ function createPlanet (pd) { //pd = Planet Data
   orbitContainer.position.z = pd.orbitCenterb;
   orbitContainer.position.y = pd.orbitCenterc;
   
-  var orbit = new THREE.Object3D();
-  var geometry = new THREE.CircleGeometry(pd.orbitRadius, 100);
+  let orbit = new THREE.Object3D();
+  let geometry = new THREE.CircleGeometry(pd.orbitRadius, 100);
   // geometry.vertices.shift();
   
   var line = new THREE.LineLoop( geometry, new THREE.LineBasicMaterial({color: pd.color, transparent: true, opacity : 0.4} ));
