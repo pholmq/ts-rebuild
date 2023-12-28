@@ -5,6 +5,7 @@ The TYCHOSIUM is free software; you can redistribute it and/or modify it under t
 import { saveAs } from 'file-saver';
 import * as dat from 'dat.gui';
 import * as THREE from 'three';
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 
 //*******************************************************************************
 //CAUTION CHANGE ONLY defaultSettings!!!! 
@@ -1613,21 +1614,21 @@ earth.containerObj.rotation.y = Math.PI/2;
     obj.distKm = "";      
 })
 
-function createEarthPolarLine() {
-  const material = new THREE.LineBasicMaterial({
-    color: 0xffffff
-  });
-  const geometry = new THREE.Geometry();
-  geometry.vertices.push(
-    new THREE.Vector3(0,-100,0),
-    new THREE.Vector3(0,100,0)
-  );
-  const line = new THREE.Line( geometry, material );
-  line.visible = o['Polar line']
-  return line
-}
-const polarLine = createEarthPolarLine();
-earth.rotationAxis.add(polarLine);
+// function createEarthPolarLine() {
+//   const material = new THREE.LineBasicMaterial({
+//     color: 0xffffff
+//   });
+//   const geometry = new THREE.BufferGeometry();
+//   geometry.vertices.push(
+//     new THREE.Vector3(0,-100,0),
+//     new THREE.Vector3(0,100,0)
+//   );
+//   const line = new THREE.Line( geometry, material );
+//   line.visible = o['Polar line']
+//   return line
+// }
+// const polarLine = createEarthPolarLine();
+// earth.rotationAxis.add(polarLine);
 //*************************************************************
 //CREATTE BARYCENTER, CELESTIAL SPHERE AND ECLIPTIC GRID
 //*************************************************************
@@ -1641,7 +1642,7 @@ celestialSphere.visible = false;
 const csLookAtObj = new THREE.Object3D();
 celestialSphere.add(csLookAtObj)
 
-const zodiac = new THREE.PolarGridHelper( radius = 250, radials = 24, circles = 1, divisions = 64, color1 = 0x000000, color2 = 0x555555 );
+const zodiac = new THREE.PolarGridHelper(250, 24, 1, 64, 0x000000, 0x555555 );
 const zCanvas = getCircularText("      GEMINI             TAURUS             ARIES             PISCES          AQUARIUS       CAPRICORN     SAGITTARIUS      SCORPIO             LIBRA              VIRGO                LEO               CANCER ", 800, 0, "right", false, true, "Arial", "18pt", 2);
 const zTexture = new THREE.CanvasTexture(zCanvas);
 const zLabelGeometry = new THREE.RingGeometry( 235, 250, 32 );
@@ -1687,7 +1688,7 @@ plane.visible = false
 // createStarfield()
 scene.updateMatrixWorld() 
 const starsContainer = new THREE.Object3D();
-starsContainer.applyMatrix( earth.rotationAxis.matrixWorld )
+starsContainer.applyMatrix4( earth.rotationAxis.matrixWorld )
 scene.add(starsContainer)
 starsContainer.visible = false
 // scene.updateMatrixWorld()
@@ -1749,7 +1750,7 @@ fetch(bsc5url)
         starsize = 1;
       }
       const star = new THREE.Mesh(
-        new THREE.SphereBufferGeometry(starsize, 20, 20),
+        new THREE.SphereGeometry(starsize, 20, 20),
 
         new THREE.MeshBasicMaterial({color: colorTemperature2rgb(obj.K)})
       );
@@ -1767,7 +1768,7 @@ fetch(bsc5url)
 
 const constContainer = new THREE.Object3D();
 scene.updateMatrixWorld()
-constContainer.applyMatrix( earth.rotationAxis.matrixWorld )
+constContainer.applyMatrix4( earth.rotationAxis.matrixWorld )
 scene.add(constContainer)
 constContainer.visible = false;
 
@@ -1822,7 +1823,7 @@ const camera = new THREE.PerspectiveCamera(15, window.innerWidth/window.innerHei
 //earth.pivotObj.add(camera);
 camera.position.set(0, 2500, 0);
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableKeys = false
 
 //EARTH CAMERA
@@ -3084,7 +3085,7 @@ function updatePlanet (pd) {
 }
 
 function createCelestialSphere(radius) {
-  const geometry1 = new THREE.SphereBufferGeometry( radius, 40, 40 );
+  const geometry1 = new THREE.SphereGeometry( radius, 40, 40 );
   const material1 = new THREE.MeshNormalMaterial( { transparent: true, wireframe: false, opacity: 0 , depthWrite: false} );
   const mesh1 = new THREE.Mesh( geometry1, material1 );
   const edgesGeometry = new THREE.EdgesGeometry( geometry1 );
