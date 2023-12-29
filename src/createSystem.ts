@@ -1,4 +1,4 @@
-import THREE from "three";
+import * as THREE from "three";
 // import system from "./system.json";
 import defaultSettings from "./systemSettings.json";
 
@@ -24,7 +24,7 @@ var earth = {
 
   orbitTilta: 0,
   orbitTiltb: 0,
-
+  rotationAxis: <THREE.Object3D>null,
   // textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/EarthDay.jpg',
   textureUrl: "textures/8k_earth_daymap.jpg",
   visible: true,
@@ -1022,7 +1022,34 @@ function createPlanet(pd) {
   scene.add(orbitContainer);
 }
 
-export default function createSystem() {
+function createCelestialSphere(radius) {
+  const geometry1 = new THREE.SphereGeometry(radius, 40, 40);
+  const material1 = new THREE.MeshNormalMaterial({
+    transparent: true,
+    wireframe: false,
+    opacity: 0,
+    depthWrite: false,
+  });
+  const mesh1 = new THREE.Mesh(geometry1, material1);
+  const edgesGeometry = new THREE.EdgesGeometry(geometry1);
+  const wireframe = new THREE.LineSegments(
+    edgesGeometry,
+    new THREE.LineBasicMaterial({
+      color: 0x666666,
+      transparent: true,
+      opacity: 0.3,
+    })
+  );
+  wireframe.add(
+    new THREE.PolarGridHelper(radius, 4, 1, 60, 0x0000ff, 0x0000ff)
+  );
+
+  mesh1.add(wireframe);
+  // mesh1.wireFrameObj = wireframe;
+  return mesh1;
+}
+
+export default function (starDistance) {
   // console.log(system, defaultSettings)
   const planets = [
     earth,
@@ -1158,5 +1185,34 @@ export default function createSystem() {
     obj.distKm = "";
   });
 
-  return { planets, scene };
+  // function createEarthPolarLine() {
+  //   const material = new THREE.LineBasicMaterial({
+  //     color: 0xffffff
+  //   });
+  //   const geometry = new THREE.BufferGeometry();
+  //   geometry.vertices.push(
+  //     new THREE.Vector3(0,-100,0),
+  //     new THREE.Vector3(0,100,0)
+  //   );
+  //   const line = new THREE.Line( geometry, material );
+  //   line.visible = o['Polar line']
+  //   return line
+  // }
+  // const polarLine = createEarthPolarLine();
+  // earth.rotationAxis.add(polarLine);
+  //*************************************************************
+  //CREATTE BARYCENTER, CELESTIAL SPHERE AND ECLIPTIC GRID
+  //*************************************************************
+
+  const barycenter = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 32, 16),
+    new THREE.MeshBasicMaterial({ color: 0x333333 })
+  );
+  scene.add(barycenter);
+
+  const celestialSphere = createCelestialSphere(starDistance);
+  earth.rotationAxis.add(celestialSphere);
+  celestialSphere.visible = false;
+
+  return { celestialSphere, planets, scene };
 }

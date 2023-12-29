@@ -1,1679 +1,306 @@
-// @ts-nocheck
 /*Copyright 2018 Simon Shack, Patrik Holmqvist
 The TYCHOSIUM is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.*/
 
-import { saveAs } from 'file-saver';
-import * as dat from 'dat.gui';
-import * as THREE from 'three';
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import Stats from 'three/examples/jsm/libs/stats.module'
-
-import {yearLength, earthRotations, sDay, sYear, sMonth, sWeek, sHour, sMinute, sSecond} from './timeConstants'
-
-
-//*******************************************************************************
-//CAUTION CHANGE ONLY defaultSettings!!!! 
-//THESE VALUES WILL OVERRIDE THOSE IN THE PLANETS.
-//*******************************************************************************
-const defaultSettings = 
-[
-{
-  "name": "Earth",
-  "size": 4,
-  "startPos": 0,
-  "speed": -0.0002479160869310127,
-  "rotationSpeed": 2301.1694948647196,
-  "tilt": -23.439062,
-  "tiltb": 0.26,
-  "orbitRadius": 37.8453,
-  "orbitCentera": 0,
-  "orbitCenterb": 0,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Moon deferent A",
-  "size": 0.6,
-  "startPos": 226.4,
-  "speed": 0.71015440177343,
-  "tilt": 0,
-  "orbitRadius": 0.0279352315075,
-  "orbitCentera": 0,
-  "orbitCenterb": 0,
-  "orbitCenterc": 0,
-  "orbitTilta": -0.2,
-  "orbitTiltb": 0.5
-},
-{
-  "name": "Moon deferent B",
-  "size": 0.6,
-  "startPos": -1.8,
-  "speed": 0,
-  "tilt": 0,
-  "orbitRadius": 0,
-  "orbitCentera": -0.38,
-  "orbitCenterb": 0.22,
-  "orbitCenterc": 0,
-  "orbitTilta": 2.3,
-  "orbitTiltb": 2.6
-},
-{
-  "name": "Moon",
-  "size": 1,
-  "startPos": 261.2,
-  "speed": 83.28521,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 10,
-  "orbitCentera": 0.8,
-  "orbitCenterb": -0.81,
-  "orbitCenterc": -0.07,
-  "orbitTilta": -1.8,
-  "orbitTiltb": -2.6
-},
-{
-  "name": "Sun deferent",
-  "size": 2,
-  "startPos": 0,
-  "speed": 0,
-  "tilt": 0,
-  "orbitRadius": 0,
-  "orbitCentera": 1.4,
-  "orbitCenterb": -0.6,
-  "orbitCenterc": 0,
-  "orbitTilta": 0.1,
-  "orbitTiltb": 0
-},
-{
-  "name": "Sun",
-  "size": 7,
-  "startPos": 0,
-  "speed": 6.283185307179586,
-  "rotationSpeed": 83.995,
-  "tilt": 0,
-  "orbitRadius": 100,
-  "orbitCentera": 1.2,
-  "orbitCenterb": -0.1,
-  "orbitCenterc": 0,
-  "orbitTilta": 0.1,
-  "orbitTiltb": 0
-},
-{
-  "name": "Mercury def A",
-  "size": 0.7,
-  "startPos": 0,
-  "speed": 6.283185307179586,
-  "tilt": 0,
-  "orbitRadius": 100,
-  "orbitCentera": -6.9,
-  "orbitCenterb": -3.2,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Mercury def B",
-  "size": 0.7,
-  "startPos": 33,
-  "speed": -6.283185307179586,
-  "tilt": 0,
-  "orbitRadius": 0,
-  "orbitCentera": 0,
-  "orbitCenterb": 0,
-  "orbitCenterc": 0,
-  "orbitTilta": -1.3,
-  "orbitTiltb": 0.5
-},
-{
-  "name": "Mercury",
-  "size": 1.53,
-  "startPos": -180.8,
-  "speed": 26.08763045,
-  "tilt": 0,
-  "orbitRadius": 38.710225,
-  "orbitCentera": 0.6,
-  "orbitCenterb": 3,
-  "orbitCenterc": -0.1,
-  "orbitTilta": 3,
-  "orbitTiltb": 0.5
-},
-{
-  "name": "Venus deferent A",
-  "size": 2,
-  "startPos": 0,
-  "speed": 6.283185307179586,
-  "tilt": 0,
-  "orbitRadius": 100,
-  "orbitCentera": 0.5,
-  "orbitCenterb": 0.5,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Venus deferent B",
-  "size": 2,
-  "startPos": 16.6,
-  "speed": -6.283185307179586,
-  "tilt": 0,
-  "orbitRadius": 0,
-  "orbitCentera": 0,
-  "orbitCenterb": 0.65,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Venus",
-  "size": 3.8,
-  "startPos": -23.6,
-  "speed": 10.21331385,
-  "tilt": 0,
-  "orbitRadius": 72.327789,
-  "orbitCentera": 0.6,
-  "orbitCenterb": -0.9,
-  "orbitCenterc": 0,
-  "orbitTilta": 3.2,
-  "orbitTiltb": -0.05
-},
-{
-  "name": "Mars E deferent",
-  "size": 2,
-  "startPos": 1,
-  "speed": 6.283185307179586,
-  "tilt": 0,
-  "orbitRadius": 100,
-  "orbitCentera": 12,
-  "orbitCenterb": -20.5,
-  "orbitCenterc": 1,
-  "orbitTilta": 0.8,
-  "orbitTiltb": 1
-},
-{
-  "name": "Mars S deferent",
-  "size": 2,
-  "startPos": -595,
-  "speed": 0.39747005,
-  "tilt": 0,
-  "orbitRadius": 7.44385,
-  "orbitCentera": 0,
-  "orbitCenterb": 0,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Mars",
-  "size": 2.13,
-  "startPos": 599,
-  "speed": -3.33986786,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 152.677,
-  "orbitCentera": -13,
-  "orbitCenterb": 6,
-  "orbitCenterc": 0,
-  "orbitTilta": 1.15,
-  "orbitTiltb": 1
-},
-{
-  "name": "Phobos",
-  "size": 0.5,
-  "startPos": 122,
-  "speed": 6986.5,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 5,
-  "orbitCentera": 0,
-  "orbitCenterb": 0,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Deimos",
-  "size": 0.5,
-  "startPos": 0,
-  "speed": 1802,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 10,
-  "orbitCentera": 0,
-  "orbitCenterb": 0,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Jupiter deferent",
-  "size": 1,
-  "startPos": 53,
-  "speed": -6.283185307179586,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 0,
-  "orbitCentera": 0,
-  "orbitCenterb": 0,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Jupiter",
-  "size": 15,
-  "startPos": -11,
-  "speed": 0.52992586,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 520.4,
-  "orbitCentera": -32,
-  "orbitCenterb": -25,
-  "orbitCenterc": -1,
-  "orbitTilta": 0,
-  "orbitTiltb": -1.15
-},
-{
-  "name": "Saturn deferent",
-  "size": 1,
-  "startPos": 509,
-  "speed": -6.283185307179586,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 20,
-  "orbitCentera": 0,
-  "orbitCenterb": 0,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Saturn",
-  "size": 6.5,
-  "startPos": -113.5,
-  "speed": 0.21350434, 
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 958.2,
-  "orbitCentera": 26,
-  "orbitCenterb": 33,
-  "orbitCenterc": -6,
-  "orbitTilta": -1.7,
-  "orbitTiltb": 0.5
-},
-{
-  "name": "Uranus deferent",
-  "size": 1,
-  "startPos": 120.5,
-  "speed": -6.283185307179586,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 20,
-  "orbitCentera": 0,
-  "orbitCenterb": 0,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Uranus",
-  "size": 7.5,
-  "startPos": 375,
-  "speed": 0.07500311,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 1920.13568,
-  "orbitCentera": 99,
-  "orbitCenterb": -44,
-  "orbitCenterc": 0,
-  "orbitTilta": -0.3,
-  "orbitTiltb": -0.6
-},
-{
-  "name": "Neptune deferent",
-  "size": 1,
-  "startPos": 175.2,
-  "speed": -6.283185307179586,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 20,
-  "orbitCentera": 0,
-  "orbitCenterb": 0,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Neptune",
-  "size": 7.5,
-  "startPos": 329.3,
-  "speed": 0.03837314,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 3004.72,
-  "orbitCentera": 0,
-  "orbitCenterb": 20,
-  "orbitCenterc": 0,
-  "orbitTilta": -1.6,
-  "orbitTiltb": 1.15
-},
-{
-  "name": "Halleys deferent",
-  "size": 1,
-  "startPos": 179,
-  "speed": -6.283185307179586,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 20,
-  "orbitCentera": -5,
-  "orbitCenterb": 10,
-  "orbitCenterc": 11,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Halleys",
-  "size": 2,
-  "startPos": 76.33,
-  "speed": -0.0830100973,
-  "rotationSpeed": 0,
-  "tilt": 0,
-  "orbitRadius": 1674.5,
-  "orbitCentera": -1540,
-  "orbitCenterb": -233.5,
-  "orbitCenterc": -507,
-  "orbitTilta": 6.4,
-  "orbitTiltb": 18.55
-},
-{
-  "name": "Eros deferent A",
-  "size": 2,
-  "startPos": 0,
-  "speed": 6.283185307179586,
-  "tilt": 0,
-  "orbitRadius": 100,
-  "orbitCentera": -40,
-  "orbitCenterb": 31.5,
-  "orbitCenterc": -0.5,
-  "orbitTilta": -7.3,
-  "orbitTiltb": 3.6
-},
-{
-  "name": "Eros deferent B",
-  "size": 2,
-  "startPos": 0,
-  "speed": -7.291563307179587,
-  "tilt": 0,
-  "orbitRadius": 0,
-  "orbitCentera": -16,
-  "orbitCenterb": -4.5,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-},
-{
-  "name": "Eros",
-  "size": 0.7,
-  "startPos": 171.8,
-  "speed": 4.57668492,
-  "tilt": 0,
-  "orbitRadius": 145.79,
-  "orbitCentera": 5.2,
-  "orbitCenterb": -6,
-  "orbitCenterc": 0,
-  "orbitTilta": 0,
-  "orbitTiltb": 0
-}]
-// //DEFINE TIME CONSTANTS
-// const yearLength = 365.2425
-// const earthRotations = 366.2425
-
-
-// const sDay = 1/yearLength;
-// const sYear = sDay*365
-// const sMonth = sDay*30;
-// const sWeek = sDay*7;
-// const sHour = sDay/24;
-// const sMinute = sHour/60;
-// const sSecond = sMinute/60;
-
-//*************************************************************
-//DEFINE PLANETS (Stars, Moons and deferents conunt as planets)
-//*************************************************************
-var earth = {
-  name: "Earth",
-  size: 4,   
-  color: 0x578B7C,
-  sphereSegments: 320,
-  startPos: 0,    
-  speed: -Math.PI*2/25344,
-  rotationSpeed: Math.PI*2*earthRotations,
-  tilt: -23.439062,
-  tiltb: 0.26,
-  orbitRadius: 37.8453,
-  orbitCentera: 0,
-  orbitCenterb: 0,
-  orbitCenterc: 0,
-  
-  orbitTilta: 0,
-  orbitTiltb: 0,  
-
-  // textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/EarthDay.jpg',
-  textureUrl: "textures/8k_earth_daymap.jpg",
-  visible: true,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:<THREE.Object3D>null,
-  axisHelper: true,
-  
-  traceLength : sYear * 18,
-  traceStep : sDay,
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-var moonDef = {
-  name: "Moon deferent A",
-  size: 0.6 ,
-  color: 0x8b8b8b,
-  startPos: 227.35,
-  speed: 0.71018840177343,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius:0.0279352315075,
-  orbitCentera: -0.2,
-  orbitCenterb: 0.1,
-  orbitCenterc: 0,
-  orbitTilta: 0.1,
-  orbitTiltb: 0.2,
-
-  visible: false,
-  containerObj:<THREE.Object3D>null,
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: false,
-  isDeferent: true,
-}; 
-
-var moonDefB = {
-  name: "Moon deferent B",
-  size: 0.6 ,
-  color: 0x8b8b8b,
-  startPos: -3,
-  speed:0,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 0,
-  orbitCentera: 0.1,
-  orbitCenterb: 0.2,
-  orbitCenterc: -0.03,
-  orbitTilta: 2.3,
-  orbitTiltb: 2.6,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: false,
-  isDeferent: true,
-}; 
-
-
-var moon = {
-  name: "Moon",
-  size: 1,
-  color: 0x8b8b8b,
-  startPos: 260.8,
-  speed: 83.28517,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 10,
-  orbitCentera: 0.4,
-  orbitCenterb: -0.9,
-  orbitCenterc: 0,
-  orbitTilta: -1.8,
-  orbitTiltb: -2.6,
-
-  textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/Moon.jpg',
-  visible: true,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj: "",
-  axisHelper: true,
-  
-  traceLength : sYear * 18,
-  traceStep : sDay,
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-
-var sunDef = {
-  name: "Sun deferent",
-  size: 2 ,
-  color: 0xFEAA0D,
-  startPos: 0,
-  speed:0,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 0,
-  orbitCentera: 1.4,
-  orbitCenterb: 0,
-  orbitCenterc: 0,
-  orbitTilta: 0,
-  orbitTiltb: 0,
-
-  visible: false,
-  containerObj:<THREE.Object3D> null,
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:<THREE.Object3D> null,
-  axisHelper: false,
-  isDeferent: true,
-};
-
-var sun = {
-  name: "Sun",
-  size: 5,    
-  //color: 0xFEAA0D,
-  color: 0xFFFF00,
-  startPos: 0.1,    
-  speed: Math.PI*2,
-  rotationSpeed: 83.995,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 100,
-  orbitCentera: 1.6,
-  orbitCenterb: -0.79,
-  orbitCenterc: 0,
-  orbitTilta: 0.25,
-  orbitTiltb: 0,  
-  textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/Sun.jpg',
-  textureTransparency: 9,
-  visible: true,
-  emissive: true,
-  containerObj:<THREE.Object3D> null,
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-
-  traceLength : sYear * 25000,
-  traceStep : sYear*10,
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-
-var mercuryDef = {
-  name: "Mercury def A",
-  size: 0.7,
-  color: 0x868485,
-  startPos: 0,
-  speed: Math.PI*2,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 100,
-  orbitCentera: -9,
-  orbitCenterb: 1.1,
-  orbitCenterc: -0.1,
-  orbitTilta: 0.6,
-  orbitTiltb: 0,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: false,
-  isDeferent: true,
-};
-
-var mercuryDefB = {
-  name: "Mercury def B",
-  size: 0.7,
-  color: 0x868485,
-  startPos: 17.3,
-  speed: -6.283185307179586,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 0,
-  orbitCentera: 0,
-  orbitCenterb: 0.4,
-  orbitCenterc: 0,
-  orbitTilta: -1.5,
-  orbitTiltb: 0.6,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: false,
-  isDeferent: true,
-};
-
-var mercury = {
-  name: "Mercury",
-  size: 1.4,
-  color: 0x868485,
-  startPos:-164.7,
-  speed: 26.087623,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 38.710225,
-  orbitCentera:1.2,
-  orbitCenterb: -1.2,
-  orbitCenterc: 0,
-  orbitTilta: 4,
-  orbitTiltb: 1.3, 
-
-  textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/Mercury.jpg',
-  visible: true,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-
-  traceLength : sYear * 14,
-  traceStep : sDay,
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-
-
-var venusDef = {
-  name: "Venus deferent A",
-  size: 2,
-  color: 0xA57C1B,
-  startPos: 0,
-  speed: Math.PI*2,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 100,
-  orbitCentera: 1.66,
-  orbitCenterb: -0.15,
-  orbitCenterc: 0,
-  orbitTilta: 0,
-  orbitTiltb: -0.15,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-  isDeferent: true,
-};
-
-var venusDefB = {
-  name: "Venus deferent B",
-  size: 2,
-  color: 0xA57C1B,
-  startPos: 13,
-  speed: -6.283185307179586,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 0,
-  orbitCentera: 0,
-  orbitCenterb: -0.15,
-  orbitCenterc: 0.2,
-  orbitTilta: 0,
-  orbitTiltb: 0.3,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-  isDeferent: true,
-};
-
-var venus = {
-  name: "Venus",
-  size: 3.9,
-  color: 0xA57C1B,
-  startPos:-20.7,
-  speed: 10.2133116,
-  //10.213454 - twoPI
-  // speed: 10.213454,
-  //speed: 41197.22326*twoPI/TGY,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 72.327789,
-  orbitCentera: 0,
-  orbitCenterb: -0.15,
-  orbitCenterc: 0.15,
-  orbitTilta: 3.4,
-  orbitTiltb: 0,
-  traceLength : sYear *16,
-  traceStep : sWeek,
-
-  textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/VenusAtmosphere.jpg',
-  visible: true,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-
-var marsDef = {
-  name: "Mars E deferent",
-  size: 2,
-  color: 0x008000,
-  startPos: 0.45,
-  speed: 6.283185307179586,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 100 ,
-  orbitCentera: 12,
-  orbitCenterb: -20.5,
-  orbitCenterc: -0.5,
-  orbitTilta: -1.45,
-  orbitTiltb: 0.5,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  isDeferent: true,
-}; 
-
-var marsSunDef = {
-  name: "Mars S deferent",
-  size: 2,
-  color: 0xFEAA0D,
-  startPos: -99.7,
-  speed: 0.398150316,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 7.44385 ,
-  orbitCentera: -0.2,
-  orbitCenterb: -0.7,
-  orbitCenterc: 0,
-  orbitTilta: -0.1,
-  orbitTiltb: -0.325,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  isDeferent: true,
-}; 
-
-var mars = {
-  name: "Mars",
-  size: 2.12,
-  color: 0xFF0000,
-  startPos: 104,
-  //speed: 3.34,
-  speed: -3.3406209,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 152.677,
-  orbitCentera: 0.2,
-  orbitCenterb: -1.5,
-  orbitCenterc: 0,
-  orbitTilta:-0.4,
-  orbitTiltb: -2.2,
-  traceLength : sYear * 44,
-  traceStep : sWeek, 
-
-  textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/Mars.jpg',
-  visible: true,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-
-  traceOn: true,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-
-var phobos = {
-  name: "Phobos",
-  size: 0.5,   
-  color: 0x8b8b8b,
-  startPos: 122,    
-  speed: 6986.5,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 5,
-  orbitCentera: 0,
-  orbitCenterb: 0,
-  orbitCenterc: 0,
-  orbitTilta: 0,
-  orbitTiltb: 0,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-};
-
-var deimos = {
-  name: "Deimos",
-  size: 0.5,   
-  color: 0x8b8b8b,
-  startPos: 0,    
-  speed: 1802,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 10,
-  orbitCentera: 0,
-  orbitCenterb: 0,
-  orbitCenterc: 0,
-  orbitTilta: 0,
-  orbitTiltb: 0,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-};
-
-var jupiterDef = {
-  name: "Jupiter deferent",
-  size: 1,   
-  color: 0xCDC2B2,
-  startPos: 5,    
-  speed:-6.283185307179586,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 15,
-  orbitCentera: 2,
-  orbitCenterb: 0,
-  orbitCenterc: 0,
-  orbitTilta: -0.25,
-  orbitTiltb: 0.4,
-  
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  isDeferent: true,
-};
-
-
-var jupiter = {
-  name: "Jupiter",
-  size: 7.5,   
-  color: 0xCDC2B2,
-  startPos: 36.5,    
-  speed: 0.529908,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 520.4,
-  orbitCentera: -25,
-  orbitCenterb: -45,
-  orbitCenterc: 0,
-  orbitTilta: 0.9,
-  orbitTiltb: -0.7,
-  traceLength : sYear * 18,
-  traceStep : sWeek,
-  
-  textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/Jupiter.jpg',
-  visible: true,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-var saturnusDef = {
-  name: "Saturn deferent",
-  size: 1,   
-  color: 0xA79662,
-  startPos: 160.5,    
-  speed: -6.283185307179586,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 20,
-  orbitCentera: 17,
-  orbitCenterb: 15,
-  orbitCenterc: 0,
-  orbitTilta: 0.45,
-  orbitTiltb: -0.4,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  isDeferent: true,
-};
-
-var saturnus = {
-  name: "Saturn",
-  size: 6.5,   
-  color: 0xA79662,
-  startPos: 232.85,    
-  speed: 0.213524,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 958.2,
-  orbitCentera: 50,
-  orbitCenterb: 35,
-  orbitCenterc: 0,
-  orbitTilta: -1.8,
-  orbitTiltb: 0.3,
-  traceLength : sYear * 45,
-  traceStep : sWeek,
-
-  textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/Saturn.jpg',
-  ringUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/saturn-rings.png',
-  ringSize: 10,
-  visible: true,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-
-var uranusDef = {
-  name: "Uranus deferent",
-  size: 1,   
-  color: 0xD2F9FA,
-  startPos: 108.5,    
-  speed: -6.283185307179586,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 20
-  ,
-  orbitCentera: -11,
-  orbitCenterb: 11,
-  orbitCenterc: 0,
-  orbitTilta: 0.7,
-  orbitTiltb: 0,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  isDeferent: true,
-};
-
-
-var uranus = {
-  name: "Uranus",
-  size: 7.5,   
-  //color: 0xCDC2B2,
-  color: 0xD2F9FA,
-  //2B383A
-  startPos: 384.6,    
-  speed:0.0747998,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 1920.13568,
-  orbitCentera: 60,
-  orbitCenterb: -22,
-  orbitCenterc: 0,
-  orbitTilta: -0.5,
-  orbitTiltb: -0.45,
-  traceLength : sYear * 18,
-  traceStep : sWeek,
-  
-  textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/Uranus.jpg',
-  visible: true,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-
-var neptuneDef = {
-  name: "Neptune deferent",
-  size: 1,   
-  color: 0x5E93F1,
-  startPos: 175.2,    
-  speed: -6.283185307179586,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 20
-  ,
-  orbitCentera: 0,
-  orbitCenterb: 0,
-  orbitCenterc: 0,
-  orbitTilta: 0,
-  orbitTiltb: 0,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  isDeferent: true,
-};
-
-
-var neptune = {
-  name: "Neptune",
-  size: 7.5,   
-  color: 0x5E93F1,
-  startPos: 329.3,    
-  speed:0.0380799,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 3004.72,
-  orbitCentera: 0,
-  orbitCenterb: 20,
-  orbitCenterc: 0,
-  orbitTilta: -1.5,
-  orbitTiltb: 1.15,
-  traceLength : sYear * 18,
-  traceStep : sWeek,
-  
-  textureUrl: 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/Neptune.jpg',
-  visible: true,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-
-var halleysDef = {
-  name: "Halleys deferent",
-  size: 1,   
-  color: 0xA57C1B,
-  startPos: 192,    
-  speed: -6.283185307179586,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 20
-  ,
-  orbitCentera: -7,
-  orbitCenterb: 3,
-  orbitCenterc: 12,
-  orbitTilta: 0,
-  orbitTiltb: 0,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  isDeferent: true,
-};
-
-
-var halleys = {
-  name: "Halleys",
-  size: 2,   
-  color: 0x00FF00,
-  planetColor: 0xFFFFFF,
-  startPos: 75.25,    
-  speed:-0.08301,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 1674.5,
-  orbitCentera: -1524,
-  orbitCenterb: -230,
-  orbitCenterc: -509,
-  orbitTilta: 7,
-  orbitTiltb: 18.41,
-  traceLength : sYear * 90,
-  traceStep : sWeek,
-  
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-
-var erosDef = {
-  name: "Eros deferent A",
-  size: 2,
-  color: 0xA57C1B,
-  startPos: 0,
-  speed: Math.PI*2,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 100,
-  orbitCentera: 1.66,
-  orbitCenterb: -0.15,
-  orbitCenterc: 0,
-  orbitTilta: 0,
-  orbitTiltb: -0.15,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-  isDeferent: true,
-};
-
-var erosDefB = {
-  name: "Eros deferent B",
-  size: 2,
-  color: 0xA57C1B,
-  startPos: 13,
-  speed: -6.283185307179586,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 0,
-  orbitCentera: 0,
-  orbitCenterb: -0.15,
-  orbitCenterc: 0.2,
-  orbitTilta: 0,
-  orbitTiltb: 0.3,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-  isDeferent: true,
-};
-
-var eros = {
-  name: "Eros",
-  size: 3.9,
-  color: 0xA57C1B,
-  startPos:-20.7,
-  speed: 10.2133116,
-  //10.213454 - twoPI
-  // speed: 10.213454,
-  //speed: 41197.22326*twoPI/TGY,
-  rotationSpeed: 0,
-  tilt: 0,
-  tiltb: 0,
-  orbitRadius: 72.327789,
-  orbitCentera: 0,
-  orbitCenterb: -0.15,
-  orbitCenterc: 0.15,
-  orbitTilta: 3.4,
-  orbitTiltb: 0,
-  traceLength : sYear *16,
-  traceStep : sWeek,
-
-  visible: false,
-  containerObj:"",
-  orbitObj:"",
-  planetObj:"",
-  pivotObj:"",
-  axisHelper: true,
-
-  traceOn: false,
-  traceLine: false,
-  traceStartPos : 0,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-};
-
-
-// var mansPath = {
-//   name: "Mans path",
-//   size: 0.1,   
-//   color: 0x00FF00,
-//   planetColor: 0xFFFFFF,
-//   startPos: 0,    
-//   speed: 0,
-//   rotationSpeed: 0,
-//   tilt: 0,
-//   orbitRadius: 0,
-//   orbitCentera: 0,
-//   orbitCenterb: 0,
-//   orbitCenterc: 0,
-//   orbitTilta: 0,
-//   orbitTiltb: 0,
-//   traceLength : sYear * 90,
-//   traceStep : sMonth,
-  
-//   visible: false,
-//   containerObj:"",
-//   orbitObj:"",
-//   planetObj:"",
-//   pivotObj:"",
-//   axisHelper: true,
-
-//   traceOn: false,
-//   traceLine: false,
-//   traceStartPos : 0,
-//   traceCurrPos : 0,
-//   traceArrIndex : 0,
-//   isDeferent: true,
-// };
-
-
+import { saveAs } from "file-saver";
+import * as dat from "dat.gui";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import Stats from "three/examples/jsm/libs/stats.module";
+
+import {
+  sDay,
+  sYear,
+  sMonth,
+  sWeek,
+  sHour,
+  sMinute,
+  sSecond,
+} from "./timeConstants";
+import createSystem from "./createSystem";
 
 //*************************************************************
 //GLOBAL and GUI SETTINGS
 //*************************************************************
 var o = {
-  'ambientLight' : 2,
-  'sunLight' : 2,
-  'background' : 0x000000,
-  'Run' : false,
-  'traceBtn' : false,
-  '1 second equals' : sWeek,
-  'speedFact' : sWeek,
-  'speed' : 1,
-  'reverse' : false,
-  'Step forward' : function() {
+  ambientLight: 2,
+  sunLight: 2,
+  background: 0x000000,
+  Run: false,
+  traceBtn: false,
+  "1 second equals": sWeek,
+  speedFact: sWeek,
+  speed: 1,
+  reverse: false,
+  "Step forward": function () {
     if (o.speedFact === sYear) {
-      o.pos = dateToDays(addYears(o.Date, 1))*sDay + timeToPos(o.Time)
-    } else if (o.speedFact === sYear*10 ) {
-      o.pos = dateToDays(addYears(o.Date, 10))*sDay + timeToPos(o.Time)
-    } else if (o.speedFact === sYear*100 ) {
-      o.pos = dateToDays(addYears(o.Date, 100))*sDay + timeToPos(o.Time)
-    } else if (o.speedFact === sYear*1000 ) {
-      o.pos = dateToDays(addYears(o.Date, 1000))*sDay + timeToPos(o.Time)
+      o.pos = dateToDays(addYears(o.Date, 1)) * sDay + timeToPos(o.Time);
+    } else if (o.speedFact === sYear * 10) {
+      o.pos = dateToDays(addYears(o.Date, 10)) * sDay + timeToPos(o.Time);
+    } else if (o.speedFact === sYear * 100) {
+      o.pos = dateToDays(addYears(o.Date, 100)) * sDay + timeToPos(o.Time);
+    } else if (o.speedFact === sYear * 1000) {
+      o.pos = dateToDays(addYears(o.Date, 1000)) * sDay + timeToPos(o.Time);
     } else {
-      o.pos += o.speedFact
+      o.pos += o.speedFact;
     }
   },
 
-  'Step backward' : function() {
+  "Step backward": function () {
     if (o.speedFact === sYear) {
-      o.pos = dateToDays(addYears(o.Date, -1))*sDay + timeToPos(o.Time)
-    } else if (o.speedFact === sYear*10 ) {
-      o.pos = dateToDays(addYears(o.Date, -10))*sDay + timeToPos(o.Time)
-    } else if (o.speedFact === sYear*100 ) {
-      o.pos = dateToDays(addYears(o.Date, -100))*sDay + timeToPos(o.Time)
-    } else if (o.speedFact === sYear*1000 ) {
-      o.pos = dateToDays(addYears(o.Date, -1000))*sDay + timeToPos(o.Time)
+      o.pos = dateToDays(addYears(o.Date, -1)) * sDay + timeToPos(o.Time);
+    } else if (o.speedFact === sYear * 10) {
+      o.pos = dateToDays(addYears(o.Date, -10)) * sDay + timeToPos(o.Time);
+    } else if (o.speedFact === sYear * 100) {
+      o.pos = dateToDays(addYears(o.Date, -100)) * sDay + timeToPos(o.Time);
+    } else if (o.speedFact === sYear * 1000) {
+      o.pos = dateToDays(addYears(o.Date, -1000)) * sDay + timeToPos(o.Time);
     } else {
-      o.pos -= o.speedFact
+      o.pos -= o.speedFact;
     }
   },
-  'Reset' : function() {o.pos = 0; controls.reset()},
-  'Today' : function() {
-              const newPos = sDay * dateToDays(new Intl.DateTimeFormat("sv-SE", {year: "numeric", month: "2-digit", day: "2-digit"}).format(Date.now()))
-              o.pos = newPos; controls.reset()
+  Reset: function () {
+    o.pos = 0;
+    controls.reset();
   },
-  'Save settings' : function() {
-    let subset, fText = "[";
-    planets.forEach(obj => {
-      subset = (({ name, size, startPos, speed, rotationSpeed, 
-                  tilt, tiltb, orbitRadius, orbitCentera, orbitCenterb,
-                  orbitCenterc, orbitTilta, orbitTiltb
-                 }) => ({ name, size, startPos, speed, rotationSpeed, 
-                         tilt, tiltb, orbitRadius, orbitCentera, orbitCenterb,
-                         orbitCenterc, orbitTilta, orbitTiltb
-                        }))(obj);
-      fText +=  "\n" + JSON.stringify(subset, null, 2) + ","
+  Today: function () {
+    const newPos =
+      sDay *
+      dateToDays(
+        new Intl.DateTimeFormat("sv-SE", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(Date.now())
+      );
+    o.pos = newPos;
+    controls.reset();
+  },
+  "Save settings": function () {
+    let subset,
+      fText = "[";
+    planets.forEach((obj) => {
+      subset = (({
+        name,
+        size,
+        startPos,
+        speed,
+        rotationSpeed,
+        tilt,
+        tiltb,
+        orbitRadius,
+        orbitCentera,
+        orbitCenterb,
+        orbitCenterc,
+        orbitTilta,
+        orbitTiltb,
+      }) => ({
+        name,
+        size,
+        startPos,
+        speed,
+        rotationSpeed,
+        tilt,
+        tiltb,
+        orbitRadius,
+        orbitCentera,
+        orbitCenterb,
+        orbitCenterc,
+        orbitTilta,
+        orbitTiltb,
+      }))(obj);
+      fText += "\n" + JSON.stringify(subset, null, 2) + ",";
       // obj.ra = "";
       // obj.dec = "";
-      // obj.dist = "";      
+      // obj.dist = "";
     });
     fText = fText.substring(0, fText.length - 1);
-    fText +="]";
-    const blob = new Blob([fText], {type: "text/plain;charset=utf-8"});
-    const d = new Date().toUTCString(); 
+    fText += "]";
+    const blob = new Blob([fText], { type: "text/plain;charset=utf-8" });
+    const d = new Date().toUTCString();
 
-    const fileName = "TS Settings " + d + ".txt"
+    const fileName = "TS Settings " + d + ".txt";
     saveAs(blob, fileName);
   },
-  'Load settings' : function() {
-    let input = document.createElement('input');
-    input.type = 'file';
-    input.onchange = e => { 
-      
-      // let file = e.target.files[0]; 
-      let file = (e.target as HTMLInputElement).files[0]; 
+  "Load settings": function () {
+    let input = document.createElement("input");
+    input.type = "file";
+    input.onchange = (e) => {
+      // let file = e.target.files[0];
+      let file = (e.target as HTMLInputElement).files[0];
       var reader = new FileReader();
-      reader.readAsText(file,'UTF-8');
+      reader.readAsText(file, "UTF-8");
 
       // here we tell the reader what to do when it's done reading...
-      reader.onload = readerEvent => {
+      reader.onload = (readerEvent) => {
         let content = readerEvent.target.result; // this is the content!
-        console.log(content)
+        console.log(content);
         let jsonObj = JSON.parse(content as string);
-        planets.forEach(obj => {
-          let newVals = jsonObj.find(obj2 => {
-            return obj.name === obj2.name
+        planets.forEach((obj) => {
+          let newVals = jsonObj.find((obj2) => {
+            return obj.name === obj2.name;
           });
           Object.assign(obj, newVals);
-          updatePlanet(obj)
-          initTrace(obj)
+          updatePlanet(obj);
+          initTrace(obj);
         });
-        setupGUI()
-      }
-    }
+        setupGUI();
+      };
+    };
     input.click();
-  }, 
-  pos : 0,
-  'Position' : "", // Dat.GUI var for pos
-  'Date' : "",
-  'cSphereSize' : 1,
-  'zodiacSize'  : 1,
-  'starDistanceScaleFact' : 1.5,
-  'starDistance' : 5000,
-  'starSize' : 1,
-  'starNamesVisible' : false,
-  'Axis helpers' : false,
-  'Shadows' : false,
-  'Orbits' : true,
-  'Time' : "00:00:00",
-  'Zoom' : 0,
-  'worldCamX' : '0',
-  'worldCamY' : '0',
-  'worldCamZ' : '0',
-  'worldCamDist' : '0',
-  'worldCamDistKm' : '0',
-  'worldCamRa' : '0',
-  'worldCamDec' : '0',
-  
-  'Day' : "",
-  'julianDay' : "",  
-  'Line trace' : true,
-  'Earth camera' : false,
-  'Camera Lat': 0,
-  'Camera Long': 0,
-  'Polar line': false,
-  'polarLineLength': 1,
-  'Camera helper' : false,
-  'Performance' : false,
-  'camX' : 0,
-  'camY' : 0,
-  'camZ' : 0,
-  'Size' : 1,
-  'traceSize' : 1,
-//  traceStartPos : 0,
-  traceLength : sYear * 18,
-  traceStep : sDay,
-  traceCurrPos : 0,
-  traceArrIndex : 0,
-  Lines : true,
+  },
+  pos: 0,
+  Position: "", // Dat.GUI var for pos
+  Date: "",
+  cSphereSize: 1,
+  zodiacSize: 1,
+  starDistanceScaleFact: 1.5,
+  starDistance: 5000,
+  starSize: 1,
+  starNamesVisible: false,
+  "Axis helpers": false,
+  Shadows: false,
+  Orbits: true,
+  Time: "00:00:00",
+  Zoom: 0,
+  worldCamX: "0",
+  worldCamY: "0",
+  worldCamZ: "0",
+  worldCamDist: "0",
+  worldCamDistKm: "0",
+  worldCamRa: "0",
+  worldCamDec: "0",
 
-  "moonElongation":0.01,
-  "mercuryElongation":0.01,
-  "venusElongation":0.01,
-  "marsElongation":0.01,
-  "jupiterElongation":0.01,
-  "saturnElongation":0.01,
-  
+  Day: "",
+  julianDay: "",
+  "Line trace": true,
+  "Earth camera": false,
+  "Camera Lat": 0,
+  "Camera Long": 0,
+  "Polar line": false,
+  polarLineLength: 1,
+  "Camera helper": false,
+  Performance: false,
+  camX: 0,
+  camY: 0,
+  camZ: 0,
+  Size: 1,
+  traceSize: 1,
+  //  traceStartPos : 0,
+  traceLength: sYear * 18,
+  traceStep: sDay,
+  traceCurrPos: 0,
+  traceArrIndex: 0,
+  Lines: true,
+
+  moonElongation: 0.01,
+  mercuryElongation: 0.01,
+  venusElongation: 0.01,
+  marsElongation: 0.01,
+  jupiterElongation: 0.01,
+  saturnElongation: 0.01,
+
   infotext: true,
-  "Target" : "",
-  lookAtObj : {},
-}
+  Target: "",
+  lookAtObj: {},
+};
 
-const planets = [earth, moonDef, moonDefB, moon, sunDef, sun, mercuryDef, mercuryDefB, mercury, venusDef, venusDefB, venus, marsDef, marsSunDef, mars, phobos, deimos, jupiterDef, jupiter, saturnusDef, saturnus, uranusDef, uranus, neptuneDef, neptune, halleysDef, halleys,
-erosDef, erosDefB, eros]
+const { celestialSphere, planets, scene } = createSystem(o.starDistance);
 
-const tracePlanets = [moon, sun, mars, venus, mercury, jupiter, saturnus, uranus, neptune, halleys, eros]
-//*************************************************************
-//LOAD DEFAULT SETTINGS
-//*************************************************************
-let jsonObj = defaultSettings;
-planets.forEach(obj => {
-  let newVals = jsonObj.find(obj2 => {
-    return obj.name === obj2.name
-  });
-  Object.assign(obj, newVals);  
-  // updatePlanet(obj)
-  // initTrace(obj)
-});
+const csLookAtObj = new THREE.Object3D();
+celestialSphere.add(csLookAtObj);
 
+const [
+  earth,
+  moonDef,
+  moonDefB,
+  moon,
+  sunDef,
+  sun,
+  mercuryDef,
+  mercuryDefB,
+  mercury,
+  venusDef,
+  venusDefB,
+  venus,
+  marsDef,
+  marsSunDef,
+  mars,
+  phobos,
+  deimos,
+  jupiterDef,
+  jupiter,
+  saturnusDef,
+  saturnus,
+  uranusDef,
+  uranus,
+  neptuneDef,
+  neptune,
+  halleysDef,
+  halleys,
+  erosDef,
+  erosDefB,
+  eros,
+] = planets;
 
+const tracePlanets = [
+  moon,
+  sun,
+  mars,
+  venus,
+  mercury,
+  jupiter,
+  saturnus,
+  uranus,
+  neptune,
+  halleys,
+  eros,
+];
 
-THREE.ColorManagement.enabled = true;
+scene.background = new THREE.Color(o.background);
 
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-const scene = new THREE.Scene();
-
-//scene.background = new THREE.Color( 0xffffff );
-scene.background = new THREE.Color( o.background );
-
-
-const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-renderer.shadowMap.enabled = true
-renderer.shadowMap.type = THREE.PCFSoftShadowMap
-
-renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// INIT XRING GEOMETRY AND CROSS ORIGIN TEXTURE LOADING
-// initXRingGeometry();
-// THREE.ImageUtils.crossOrigin = '';
-
-
-//*************************************************************
-//CREATE AND CONFIGURE PLANETS
-//*************************************************************
-createPlanet(earth);
-createPlanet(moonDef);
-createPlanet(moonDefB);
-createPlanet(moon);
-// moon.planetObj.rotation.y = Math.PI //quick fix so that the Moon texture is turned towards Earth
-createPlanet(sunDef);
-createPlanet(sun);
-createPlanet(venusDef);
-createPlanet(venusDefB);
-createPlanet(venus);
-createPlanet(mercuryDef);
-createPlanet(mercuryDefB);
-createPlanet(mercury);
-createPlanet(marsDef);
-createPlanet(marsSunDef);
-createPlanet(mars);
-createPlanet(phobos);
-createPlanet(deimos);
-createPlanet(jupiterDef);
-createPlanet(jupiter);
-createPlanet(saturnusDef);
-createPlanet(saturnus);
-createPlanet(uranusDef);
-createPlanet(uranus);
-createPlanet(neptuneDef);
-createPlanet(neptune);
-createPlanet(halleysDef);
-createPlanet(halleys);
-createPlanet(erosDef);
-createPlanet(erosDefB);
-createPlanet(eros);
-// createPlanet(mansPath);
-
-earth.pivotObj.add(sunDef.containerObj);
-sunDef.pivotObj.add(sun.containerObj);
-
-earth.pivotObj.add(moonDef.containerObj);
-moonDef.pivotObj.add(moonDefB.containerObj);
-moonDefB.pivotObj.add(moon.containerObj);
-
-earth.pivotObj.add(venusDef.containerObj);
-venusDef.pivotObj.add(venusDefB.containerObj);
-venusDefB.pivotObj.add(venus.containerObj);
-
-earth.pivotObj.add(mercuryDef.containerObj);
-mercuryDef.pivotObj.add(mercuryDefB.containerObj);
-mercuryDefB.pivotObj.add(mercury.containerObj);
-
-earth.pivotObj.add(marsDef.containerObj);
-marsDef.pivotObj.add(marsSunDef.containerObj);
-marsSunDef.pivotObj.add(mars.containerObj);
-
-mars.pivotObj.add(phobos.containerObj);
-mars.pivotObj.add(deimos.containerObj);
-
-sun.pivotObj.add(jupiter.containerObj);
-sun.pivotObj.add(saturnus.containerObj);
-
-sun.pivotObj.add(jupiterDef.containerObj);
-jupiterDef.pivotObj.add(jupiter.containerObj)
-sun.pivotObj.add(saturnusDef.containerObj);
-saturnusDef.pivotObj.add(saturnus.containerObj);
-
-sun.pivotObj.add(uranusDef.containerObj);
-uranusDef.pivotObj.add(uranus.containerObj);
-
-sun.pivotObj.add(neptuneDef.containerObj);
-neptuneDef.pivotObj.add(neptune.containerObj);
-
-sun.pivotObj.add(halleysDef.containerObj);
-halleysDef.pivotObj.add(halleys.containerObj);
-
-earth.pivotObj.add(erosDef.containerObj);
-erosDef.pivotObj.add(erosDefB.containerObj);
-erosDefB.pivotObj.add(eros.containerObj);
-
-
-earth.containerObj.rotation.y = Math.PI/2;
-//END CREATE AND CONFIGURE PLANETS
-
-
-
-
-//*************************************************************
-//CREATE VALUE HOLDERS FOR Right Ascension, Declination and Distance
-//*************************************************************
-  planets.forEach(obj => {
-    obj.ra = "";
-    obj.dec = "";
-    obj.dist = "";      
-    obj.distKm = "";      
-})
-
-// function createEarthPolarLine() {
-//   const material = new THREE.LineBasicMaterial({
-//     color: 0xffffff
-//   });
-//   const geometry = new THREE.BufferGeometry();
-//   geometry.vertices.push(
-//     new THREE.Vector3(0,-100,0),
-//     new THREE.Vector3(0,100,0)
-//   );
-//   const line = new THREE.Line( geometry, material );
-//   line.visible = o['Polar line']
-//   return line
-// }
-// const polarLine = createEarthPolarLine();
-// earth.rotationAxis.add(polarLine);
-//*************************************************************
-//CREATTE BARYCENTER, CELESTIAL SPHERE AND ECLIPTIC GRID
-//*************************************************************
-const bGeometry = new THREE.SphereGeometry( 1, 32, 16 );
-const bMaterial = new THREE.MeshBasicMaterial( { color: 0x333333 } );
-const barycenter = new THREE.Mesh( new THREE.SphereGeometry( 1, 32, 16 ), new THREE.MeshBasicMaterial( { color: 0x333333 } ) );
-scene.add(barycenter);
-const celestialSphere = createCelestialSphere(o.starDistance)
-earth.rotationAxis.add(celestialSphere);
-celestialSphere.visible = false;
-const csLookAtObj = new THREE.Object3D();
-celestialSphere.add(csLookAtObj)
-
-const zodiac = new THREE.PolarGridHelper(250, 24, 1, 64, 0x000000, 0x555555 );
-const zCanvas = getCircularText("      GEMINI             TAURUS             ARIES             PISCES          AQUARIUS       CAPRICORN     SAGITTARIUS      SCORPIO             LIBRA              VIRGO                LEO               CANCER ", 800, 0, "right", false, true, "Arial", "18pt", 2);
+const zodiac = new THREE.PolarGridHelper(250, 24, 1, 64, 0x000000, 0x555555);
+const zCanvas = getCircularText(
+  "      GEMINI             TAURUS             ARIES             PISCES          AQUARIUS       CAPRICORN     SAGITTARIUS      SCORPIO             LIBRA              VIRGO                LEO               CANCER ",
+  800,
+  0,
+  "right",
+  false,
+  true,
+  "Arial",
+  "18pt",
+  2
+);
 const zTexture = new THREE.CanvasTexture(zCanvas);
-const zLabelGeometry = new THREE.RingGeometry( 235, 250, 32 );
+const zLabelGeometry = new THREE.RingGeometry(235, 250, 32);
 //const zLabelGeometry = new THREE.PlaneBufferGeometry(500, 500);
 const zLabelMaterial = new THREE.MeshBasicMaterial({
-    map: zTexture,
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 1,
+  map: zTexture,
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: 1,
 });
 const zLabel = new THREE.Mesh(zLabelGeometry, zLabelMaterial);
 zodiac.add(zLabel);
-zLabel.rotation.x = -Math.PI/2
-scene.add( zodiac );
-zodiac.position.z = -37.8453
+zLabel.rotation.x = -Math.PI / 2;
+scene.add(zodiac);
+zodiac.position.z = -37.8453;
 // earth.pivotObj.add(zodiac);
 zodiac.position.y = -3; //Set it slightly below the Barycentre to avoid planet/zodiacring interference
 
-zodiac.rotation.y = Math.PI/6;
+zodiac.rotation.y = Math.PI / 6;
 zodiac.visible = false;
 
-const plane = new THREE.GridHelper(o.starDistance*2, 30, 0x008800, 0x000088);
+const plane = new THREE.GridHelper(o.starDistance * 2, 30, 0x008800, 0x000088);
 earth.pivotObj.add(plane);
-plane.visible = false
+plane.visible = false;
 
 //*************************************************************
 //CREATE MILKYWAY SKYDOME
@@ -1682,8 +309,7 @@ plane.visible = false
 
 // const skyTexture = new THREE.TextureLoader().load("https://raw.githubusercontent.com/pholmq/tsnova-resources/master/milkyway.jpg");
 
-
-// const skyMaterial = new THREE.MeshBasicMaterial({ 
+// const skyMaterial = new THREE.MeshBasicMaterial({
 //         map: skyTexture,
 // });
 // const sky = new THREE.Mesh(skyGeo, skyMaterial);
@@ -1693,33 +319,37 @@ plane.visible = false
 //CREATE BACKGOUND STARFIELD AND PLOT NAKED EYE VISIBLE STARS
 //*************************************************************
 // createStarfield()
-scene.updateMatrixWorld() 
+scene.updateMatrixWorld();
 const starsContainer = new THREE.Object3D();
-starsContainer.applyMatrix4( earth.rotationAxis.matrixWorld )
-scene.add(starsContainer)
-starsContainer.visible = false
+starsContainer.applyMatrix4(earth.rotationAxis.matrixWorld);
+scene.add(starsContainer);
+starsContainer.visible = false;
 // scene.updateMatrixWorld()
 
 function createLabel(message) {
   const fontSize = 30;
-  let canvas = document.createElement('canvas');
-  let context = canvas.getContext('2d');
+  let canvas = document.createElement("canvas");
+  let context = canvas.getContext("2d");
   canvas.width = 256;
   canvas.height = 128;
   context.font = fontSize + "px Arial";
-  context.strokeStyle = 'black';
+  context.strokeStyle = "black";
   context.lineWidth = 8;
   context.strokeText(message, 0, fontSize);
-  context.fillStyle = 'LightGrey';
-  context.fillText( message, 0, fontSize);
-  let texture = new THREE.Texture(canvas) 
+  context.fillStyle = "LightGrey";
+  context.fillText(message, 0, fontSize);
+  let texture = new THREE.Texture(canvas);
   texture.needsUpdate = true;
-  let spriteMaterial = new THREE.SpriteMaterial( { map: texture, depthTest: false} );
-  let sprite = new THREE.Sprite( spriteMaterial );
-  return sprite;  
+  let spriteMaterial = new THREE.SpriteMaterial({
+    map: texture,
+    depthTest: false,
+  });
+  let sprite = new THREE.Sprite(spriteMaterial);
+  return sprite;
 }
 
-const bsc5url = 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/bsc5-short.json'
+const bsc5url =
+  "https://raw.githubusercontent.com/pholmq/tsnova-resources/master/bsc5-short.json";
 /*
 https://github.com/brettonw/YaleBrightStarCatalog
 Fields in the Short BSC5 file (empty fields are omitted):
@@ -1735,69 +365,65 @@ K	An approximate color temperature of the star, computed from B-V or the Spectra
 V	Visual magnitude
 */
 fetch(bsc5url)
-  .then(response => {
-  return response.json();
-})
-  .then(bscStars => {
+  .then((response) => {
+    return response.json();
+  })
+  .then((bscStars) => {
+    bscStars.forEach((obj) => {
+      if (obj.N !== undefined) {
+        const starPos = new THREE.Object3D();
+        starPos.rotation.z = decToRad(obj.Dec);
+        starPos.rotation.y = raToRad(obj.RA) - Math.PI / 2;
+        let starsize;
+        if (obj.V < 1) {
+          starsize = 12;
+        } else if (obj.V > 1 && obj.V < 3) {
+          starsize = 6;
+        } else if (obj.V > 3 && obj.V < 5) {
+          starsize = 3;
+        } else {
+          starsize = 1;
+        }
+        const star = new THREE.Mesh(
+          new THREE.SphereGeometry(starsize, 20, 20),
 
-  bscStars.forEach(obj => {
-    if (obj.N !== undefined) {    
-
-      const starPos = new THREE.Object3D();
-      starPos.rotation.z = decToRad(obj.Dec)
-      starPos.rotation.y = raToRad(obj.RA) - Math.PI/2
-      let starsize;
-      if (obj.V < 1) {
-        starsize = 12;
-      } else if(obj.V > 1 && obj.V < 3) {
-        starsize = 6;
-      } else if(obj.V > 3 && obj.V < 5) {
-        starsize = 3;
-      } else {
-        starsize = 1;
+          new THREE.MeshBasicMaterial({ color: colorTemperature2rgb(obj.K) })
+        );
+        star.position.x = o.starDistance;
+        const nameTag = createLabel(obj.N);
+        nameTag.visible = o.starNamesVisible;
+        nameTag.position.copy(star.position);
+        starPos.add(star);
+        starPos.add(nameTag);
+        starsContainer.add(starPos);
       }
-      const star = new THREE.Mesh(
-        new THREE.SphereGeometry(starsize, 20, 20),
-
-        new THREE.MeshBasicMaterial({color: colorTemperature2rgb(obj.K)})
-      );
-      star.position.x = o.starDistance;
-      const nameTag = createLabel(obj.N);
-      nameTag.visible = o.starNamesVisible;
-      nameTag.position.copy(star.position)
-      starPos.add(star)
-      starPos.add(nameTag)
-      starsContainer.add(starPos);
-    }
+    });
   });
-});
-
 
 const constContainer = new THREE.Object3D();
-scene.updateMatrixWorld()
-constContainer.applyMatrix4( earth.rotationAxis.matrixWorld )
-scene.add(constContainer)
+scene.updateMatrixWorld();
+constContainer.applyMatrix4(earth.rotationAxis.matrixWorld);
+scene.add(constContainer);
 constContainer.visible = false;
 
-const constellationsUrl = 'https://raw.githubusercontent.com/pholmq/tsnova-resources/master/constellations.json'
+const constellationsUrl =
+  "https://raw.githubusercontent.com/pholmq/tsnova-resources/master/constellations.json";
 //create a blue LineBasicMaterial
-const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
 fetch(constellationsUrl)
-  .then(response => {
-  return response.json();
-})
-  .then(constData => {
-    const cRA = constData.rightAscension
-    const cDec = constData.declination
-    const cAst = constData.asterismIndices
-    
-    let points = [];
-    
-    for (let i = 0; i < constData.asterismIndices.length; i++) {
+  .then((response) => {
+    return response.json();
+  })
+  .then((constData) => {
+    const cRA = constData.rightAscension;
+    const cDec = constData.declination;
+    const cAst = constData.asterismIndices;
 
+    let points = [];
+
+    for (let i = 0; i < constData.asterismIndices.length; i++) {
       let starIndex = constData.asterismIndices[i];
       if (starIndex != -1) {
-
         // Compute star position.
         let ra = constData.rightAscension[starIndex];
         let dec = constData.declination[starIndex];
@@ -1808,12 +434,10 @@ fetch(constellationsUrl)
 
         // points.push(new THREE.Vector3(-x, y, z));
         points.push(new THREE.Vector3(x, y, z));
-      }
-      else {
-
+      } else {
         // Create lines.
-        const geometry = new THREE.BufferGeometry().setFromPoints( points );
-        const line = new THREE.Line( geometry, material );
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, material);
         constContainer.add(line);
         // Clear points array.
         points = [];
@@ -1821,17 +445,20 @@ fetch(constellationsUrl)
     }
   });
 
-
-
 //*************************************************************
 //SETUP CAMERAS and CONTROLS
 //*************************************************************
-const camera = new THREE.PerspectiveCamera(15, window.innerWidth/window.innerHeight, 0.1, 10000000);
+const camera = new THREE.PerspectiveCamera(
+  15,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  10000000
+);
 //earth.pivotObj.add(camera);
 camera.position.set(0, 2500, 0);
 
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableKeys = false
+// controls.enableKeys = false;
 
 //EARTH CAMERA
 const camPivotX = new THREE.Object3D();
@@ -1843,9 +470,13 @@ camPivotY.add(camPivotX);
 const cameraMount = new THREE.Object3D();
 camPivotX.add(cameraMount);
 
-
 //const planetCamera = new THREE.PerspectiveCamera( 1000, 1600/800, 0.0001, 2000 );
-const planetCamera = new THREE.PerspectiveCamera(90, window.innerWidth/window.innerHeight, 0.001, 10000000);
+const planetCamera = new THREE.PerspectiveCamera(
+  90,
+  window.innerWidth / window.innerHeight,
+  0.001,
+  10000000
+);
 
 // const left = -1;
 // const right = 1;
@@ -1861,61 +492,56 @@ let SCREEN_HEIGHT = window.innerHeight;
 let aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
 
 const frustumSize = 10;
-		// cameraPerspective = new THREE.PerspectiveCamera( 50, 0.5 * aspect, 150, 1000 );
+// cameraPerspective = new THREE.PerspectiveCamera( 50, 0.5 * aspect, 150, 1000 );
 
 // const planetCamera = new THREE.OrthographicCamera( 0.5 * frustumSize * aspect / - 2, 0.5 * frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, 1, 2000 );
 
-
-cameraMount.add(planetCamera)
+cameraMount.add(planetCamera);
 
 //Add the fake planet mansPath so we can trace "A mans yearly path"
 // cameraMount.add(mansPath.containerObj)
 
+cameraMount.position.z = -earth.size - 0.002;
 
-cameraMount.position.z = -earth.size - 0.002
-
-const cameraHelper = new THREE.CameraHelper( planetCamera );
-scene.add( cameraHelper );
-const axisHelper = new THREE.AxesHelper(10)
-planetCamera.add(axisHelper)
-planetCamera.rotateX(-1)
+const cameraHelper = new THREE.CameraHelper(planetCamera);
+scene.add(cameraHelper);
+const axisHelper = new THREE.AxesHelper(10);
+planetCamera.add(axisHelper);
+planetCamera.rotateX(-1);
 
 function updatePlanetCamera() {
-     planetCamera.updateProjectionMatrix()
-     cameraHelper.update()
+  planetCamera.updateProjectionMatrix();
+  cameraHelper.update();
 }
 
 // o['Camera helper'] = true
 
-
 function trackSun() {
-    camPivotX.rotation.x = o['Camera Lat'] + Math.PI/2
-    camPivotY.rotation.y = o['Camera Long'] + Math.PI/2
-
+  camPivotX.rotation.x = o["Camera Lat"] + Math.PI / 2;
+  camPivotY.rotation.y = o["Camera Long"] + Math.PI / 2;
 }
 
-
-window.addEventListener('keydown', function(event) {
+window.addEventListener("keydown", function (event) {
   //event.preventDefault();
   let rotSpeed = 0.1;
   switch (event.key) {
-    case "ArrowLeft" :
-    case "a" :
+    case "ArrowLeft":
+    case "a":
       //planetCamera.rotateY( -rotSpeed );
-      cameraMount.rotateZ( -rotSpeed );
+      cameraMount.rotateZ(-rotSpeed);
       break;
-    case "ArrowRight" :
-    case "d" :
+    case "ArrowRight":
+    case "d":
       //planetCamera.rotateY( -rotSpeed );
-      cameraMount.rotateZ( rotSpeed );
+      cameraMount.rotateZ(rotSpeed);
       break;
-    case "ArrowUp" :
-    case "w" :
-      planetCamera.rotateX( rotSpeed );
+    case "ArrowUp":
+    case "w":
+      planetCamera.rotateX(rotSpeed);
       break;
     case "ArrowDown":
-    case "s" :
-      planetCamera.rotateX( -rotSpeed );
+    case "s":
+      planetCamera.rotateX(-rotSpeed);
       break;
     // case "q" :
     //   planetCamera.rotateZ( rotSpeed );
@@ -1926,13 +552,10 @@ window.addEventListener('keydown', function(event) {
   }
 });
 
-
-
-function showHideCameraHelper () {
-  axisHelper.visible = o['Camera helper']
-  cameraHelper.visible = o['Camera helper']
+function showHideCameraHelper() {
+  axisHelper.visible = o["Camera helper"];
+  cameraHelper.visible = o["Camera helper"];
 }
-
 
 //*************************************************************
 //SETUP LIGHT
@@ -1942,62 +565,62 @@ function showHideCameraHelper () {
 const ambientLight = new THREE.AmbientLight(0xffffff, 3);
 scene.add(ambientLight);
 
-const light = new THREE.PointLight( 0xffffff, o.sunLight, 0 );
+const light = new THREE.PointLight(0xffffff, o.sunLight, 0);
 light.castShadow = true;
 // light.position.set( 50, 50, 50 );
-sun.pivotObj.add( light );
+sun.pivotObj.add(light);
 
 const lightMount = new THREE.Object3D();
-sun.pivotObj.add( lightMount );
+sun.pivotObj.add(lightMount);
 
 const lightOnSun = new THREE.SpotLight(0xffffff, 10);
-lightMount.add( lightOnSun );
-lightOnSun.position.y = 15
-lightOnSun.angle = 0.5
-lightOnSun.distance = 15
-lightOnSun.target = lightMount
+lightMount.add(lightOnSun);
+lightOnSun.position.y = 15;
+lightOnSun.angle = 0.5;
+lightOnSun.distance = 15;
+lightOnSun.target = lightMount;
 // const helper = new THREE.SpotLightHelper(lightOnSun);
 // scene.add(helper);
 
 const lightOnSun2 = new THREE.SpotLight(0xffffff, 10);
-lightMount.add( lightOnSun2 );
-lightOnSun2.position.y = -15
-lightOnSun2.angle = 0.5
-lightOnSun2.distance = 15
-lightOnSun2.target = lightMount
+lightMount.add(lightOnSun2);
+lightOnSun2.position.y = -15;
+lightOnSun2.angle = 0.5;
+lightOnSun2.distance = 15;
+lightOnSun2.target = lightMount;
 
 const lightOnSun3 = new THREE.SpotLight(0xffffff, 10);
-lightMount.add( lightOnSun3 );
-lightOnSun3.position.z = 15
-lightOnSun3.angle = 0.5
-lightOnSun3.distance = 15
-lightOnSun3.target = lightMount
+lightMount.add(lightOnSun3);
+lightOnSun3.position.z = 15;
+lightOnSun3.angle = 0.5;
+lightOnSun3.distance = 15;
+lightOnSun3.target = lightMount;
 
 const lightOnSun4 = new THREE.SpotLight(0xffffff, 10);
-lightMount.add( lightOnSun4 );
-lightOnSun4.position.z = -15
-lightOnSun4.angle = 0.5
-lightOnSun4.distance = 15
-lightOnSun4.target = lightMount
+lightMount.add(lightOnSun4);
+lightOnSun4.position.z = -15;
+lightOnSun4.angle = 0.5;
+lightOnSun4.distance = 15;
+lightOnSun4.target = lightMount;
 
 const lightOnSun5 = new THREE.SpotLight(0xffffff, 10);
-lightMount.add( lightOnSun5 );
-lightOnSun5.position.x = 16
-lightOnSun5.angle = 0.5
-lightOnSun5.distance = 15
-lightOnSun5.target = lightMount
+lightMount.add(lightOnSun5);
+lightOnSun5.position.x = 16;
+lightOnSun5.angle = 0.5;
+lightOnSun5.distance = 15;
+lightOnSun5.target = lightMount;
 
 const lightOnSun6 = new THREE.SpotLight(0xffffff, 10);
-lightMount.add( lightOnSun6 );
-lightOnSun6.position.x = -15
-lightOnSun6.angle = 0.5
-lightOnSun6.distance = 15
-lightOnSun6.target = lightMount
+lightMount.add(lightOnSun6);
+lightOnSun6.position.x = -15;
+lightOnSun6.angle = 0.5;
+lightOnSun6.distance = 15;
+lightOnSun6.target = lightMount;
 
-moon.planetObj.castShadow = true;
-earth.planetObj.receiveShadow = true;
-light.shadow.camera.far = 50000
-light.shadow.mapSize.width = 2560;  // 2560 4096 512 default 
+// moon.planetObj.castShadow = true;
+// earth.planetObj.receiveShadow = true;
+light.shadow.camera.far = 50000;
+light.shadow.mapSize.width = 2560; // 2560 4096 512 default
 light.shadow.mapSize.height = 2560; // 512 default
 light.shadow.radius = 2;
 // const axesHelper = new THREE.AxesHelper( 20 );
@@ -2006,85 +629,106 @@ light.shadow.radius = 2;
 //*************************************************************
 //CREATE SETTINGGS AND SETUP GUI
 //*************************************************************
-setupGUI()
+setupGUI();
 function setupGUI() {
   if (gui) {
-      gui.remove;
-  } 
+    gui.remove;
+  }
   //var gui = new dat.GUI( { autoPlace: false } );
   var gui = new dat.GUI();
-  gui.domElement.id = 'gui';
-  gui.add(o, 'Date').listen().onFinishChange(() => {
-    if (isValidDate(o.Date)) {
-      o.pos = sDay * dateToDays(o.Date) + timeToPos(o.Time);
-    }
-  });
-  
-  gui.add(o, 'Time').name('Time (UTC)').listen().onFinishChange(function() {
-    if (isValidTime(o.Time)) {
-      o.pos = sDay * dateToDays(o.Date) + timeToPos(o.Time);
-    } 
-  });
-  
-  gui.add(o, 'julianDay').name('Julian day').listen().onFinishChange(() => {
-    if (isNumeric(o.julianDay)) {
-      o.Day = o.julianDay - 2451717;
-      o.pos = sDay * o.Day + timeToPos(o.Time);
-    }
-  });
-
-  let ctrlFolder = gui.addFolder('Controls')
-  ctrlFolder.add(o, 'Run').listen();
-  ctrlFolder.add(o, 'traceBtn').name('Trace').onFinishChange(()=>{
-    tracePlanets.forEach(obj => {
-      initTrace(obj);
+  gui.domElement.id = "gui";
+  gui
+    .add(o, "Date")
+    .listen()
+    .onFinishChange(() => {
+      if (isValidDate(o.Date)) {
+        o.pos = sDay * dateToDays(o.Date) + timeToPos(o.Time);
+      }
     });
-  });
-  
+
+  gui
+    .add(o, "Time")
+    .name("Time (UTC)")
+    .listen()
+    .onFinishChange(function () {
+      if (isValidTime(o.Time)) {
+        o.pos = sDay * dateToDays(o.Date) + timeToPos(o.Time);
+      }
+    });
+
+  gui
+    .add(o, "julianDay")
+    .name("Julian day")
+    .listen()
+    .onFinishChange(() => {
+      if (isNumeric(o.julianDay)) {
+        o.Day = String(Number(o.julianDay) - 2451717);
+        o.pos = sDay * Number(o.Day) + timeToPos(o.Time);
+      }
+    });
+
+  let ctrlFolder = gui.addFolder("Controls");
+  ctrlFolder.add(o, "Run").listen();
+  ctrlFolder
+    .add(o, "traceBtn")
+    .name("Trace")
+    .onFinishChange(() => {
+      tracePlanets.forEach((obj) => {
+        initTrace(obj);
+      });
+    });
+
   //  tracePlanets.forEach(obj => {
   //   folderT.add(obj, 'traceOn').name(obj.name).onFinishChange(()=>{initTrace(obj)})
   // });
-  
-  ctrlFolder.add(o, '1 second equals', 
-                 { '1 second': sSecond, 
-                  '1 minute': sMinute, 
-                  '1 hour': sHour, 
-                  '1 day': sDay, 
-                  '1 week': sWeek, 
-                  '1 month': sMonth,  
-                  '1 year': sYear, 
-                  '10 years': sYear*10,
-                  '100 years': sYear*100,
-                  '1000 years': sYear*1000,
-                 }).onFinishChange(function() {
-    o.speedFact = Number(o['1 second equals']);
-  });
-  ctrlFolder.add(o, 'speed', -5, 5).step(0.5).name('Speed multiplier');
+
+  ctrlFolder
+    .add(o, "1 second equals", {
+      "1 second": sSecond,
+      "1 minute": sMinute,
+      "1 hour": sHour,
+      "1 day": sDay,
+      "1 week": sWeek,
+      "1 month": sMonth,
+      "1 year": sYear,
+      "10 years": sYear * 10,
+      "100 years": sYear * 100,
+      "1000 years": sYear * 1000,
+    })
+    .onFinishChange(function () {
+      o.speedFact = Number(o["1 second equals"]);
+    });
+  ctrlFolder.add(o, "speed", -5, 5).step(0.5).name("Speed multiplier");
   // ctrlFolder.add(o, 'reverse').name('Reverse direction').onFinishChange(() => {
   //   if (o.reverse) {o.speed = -1} else {o.speed = 1}
   // });
-  ctrlFolder.add(o, 'Step forward' );
-  ctrlFolder.add(o, 'Step backward' );
-  ctrlFolder.add(o, 'Reset' );
-  ctrlFolder.add(o, 'Today' );
-  let planList = {}
-  planets.forEach(obj => {
+  ctrlFolder.add(o, "Step forward");
+  ctrlFolder.add(o, "Step backward");
+  ctrlFolder.add(o, "Reset");
+  ctrlFolder.add(o, "Today");
+  let planList = {};
+  planets.forEach((obj) => {
     if (!obj.isDeferent) {
-      planList[obj.name] = obj.name
+      planList[obj.name] = obj.name;
     }
   });
 
-  ctrlFolder.add(o, 'Target', {'Barycenter': "", ...planList}).name('Look at').onFinishChange(()=>{
-    // console.log(o.Target)
-    o.lookAtObj = planets.find(obj => {
-      return obj.name === o.Target
-    })
-    if (o.Target === "") {o.lookAtObj = {}}    
-  });
-  
-  ctrlFolder.open()
+  ctrlFolder
+    .add(o, "Target", { Barycenter: "", ...planList })
+    .name("Look at")
+    .onFinishChange(() => {
+      // console.log(o.Target)
+      o.lookAtObj = planets.find((obj) => {
+        return obj.name === o.Target;
+      });
+      if (o.Target === "") {
+        o.lookAtObj = {};
+      }
+    });
 
-  let folderCamera = gui.addFolder('Camera')  
+  ctrlFolder.open();
+
+  let folderCamera = gui.addFolder("Camera");
   // folderCamera.add(o, 'worldCamX').name('X').listen().onFinishChange(function() {
   //   if (isNumeric(o.worldCamX)) { camera.position.x = o.worldCamX }
   // });
@@ -2095,251 +739,326 @@ function setupGUI() {
   //   if (isNumeric(o.worldCamZ)) { camera.position.z = o.worldCamZ }
   // });
 
-  folderCamera.add(o, 'worldCamRa').name('RA').listen()
-  folderCamera.add(o, 'worldCamDec').name('Dec').listen()
+  folderCamera.add(o, "worldCamRa").name("RA").listen();
+  folderCamera.add(o, "worldCamDec").name("Dec").listen();
   // folderCamera.add(o, 'worldCamDistKm').name('Kilometers').listen()
-  folderCamera.add(o, 'worldCamDist').name('AU distance').listen()
+  folderCamera.add(o, "worldCamDist").name("AU distance").listen();
 
-  
-let folderCam = folderCamera.addFolder('Earth cam (experimental) Move w arrows')
-folderCam.add(o, 'Earth camera')
+  let folderCam = folderCamera.addFolder(
+    "Earth cam (experimental) Move w arrows"
+  );
+  folderCam.add(o, "Earth camera");
   //folderCam.add(planetCamera, 'fov', 1, 180).onChange(updatePlanetCamera);
-  o['Camera Lat'] = 0.01
-  o['Camera Long'] = 0.01
-  folderCam.add(o, 'Camera Lat', 0.00, Math.PI).listen()
-  folderCam.add(o, 'Camera Long', 0.00, Math.PI*2).listen()
-  o['Camera Lat'] = 0.67
-  o['Camera Long'] = 0
-  folderCam.add(o, 'Camera helper').onFinishChange(() => {
-    showHideCameraHelper()
-  });  
-  
-  let folderT = gui.addFolder('Trace')
-  folderT.add(o, 'traceSize', 0.1, 2).name('Dot size').onChange(()=>{changeTraceScale()})
+  o["Camera Lat"] = 0.01;
+  o["Camera Long"] = 0.01;
+  folderCam.add(o, "Camera Lat", 0.0, Math.PI).listen();
+  folderCam.add(o, "Camera Long", 0.0, Math.PI * 2).listen();
+  o["Camera Lat"] = 0.67;
+  o["Camera Long"] = 0;
+  folderCam.add(o, "Camera helper").onFinishChange(() => {
+    showHideCameraHelper();
+  });
 
-  folderT.add(o, 'Lines').onFinishChange(()=>{
-    tracePlanets.forEach(obj => {
-      setTraceMaterial(obj)
+  let folderT = gui.addFolder("Trace");
+  folderT
+    .add(o, "traceSize", 0.1, 2)
+    .name("Dot size")
+    .onChange(() => {
+      changeTraceScale();
+    });
+
+  folderT.add(o, "Lines").onFinishChange(() => {
+    tracePlanets.forEach((obj) => {
+      setTraceMaterial(obj);
     });
   });
 
-  tracePlanets.forEach(obj => {
-    folderT.add(obj, 'traceOn').name(obj.name).onFinishChange(()=>{initTrace(obj)})
+  tracePlanets.forEach((obj) => {
+    folderT
+      .add(obj, "traceOn")
+      .name(obj.name)
+      .onFinishChange(() => {
+        initTrace(obj);
+      });
   });
   // folderT.open();
 
-  
-  let posFolder = gui.addFolder('Positions')
-  let posPlFolder
-  tracePlanets.forEach(obj => {
-    posPlFolder = posFolder.addFolder(obj.name)
-    posPlFolder.add(obj, 'ra').listen().name('RA')
-    posPlFolder.add(obj, 'dec').listen().name('Dec')
-    posPlFolder.add(obj, 'distKm').listen().name('Kilometers')
-    posPlFolder.add(obj, 'dist').listen().name('AU Distance')
-    posPlFolder.open()
-  })
+  let posFolder = gui.addFolder("Positions");
+  let posPlFolder;
+  tracePlanets.forEach((obj) => {
+    posPlFolder = posFolder.addFolder(obj.name);
+    posPlFolder.add(obj, "ra").listen().name("RA");
+    posPlFolder.add(obj, "dec").listen().name("Dec");
+    posPlFolder.add(obj, "distKm").listen().name("Kilometers");
+    posPlFolder.add(obj, "dist").listen().name("AU Distance");
+    posPlFolder.open();
+  });
 
-  
-  
+  let folderElongations = gui.addFolder("Elongations");
+  folderElongations
+    .add(o, "moonElongation")
+    .min(0.0)
+    .max(180.0)
+    .listen()
+    .name("Moon");
+  folderElongations
+    .add(o, "mercuryElongation")
+    .min(0.0)
+    .max(180.0)
+    .listen()
+    .name("Mercury");
+  folderElongations
+    .add(o, "venusElongation")
+    .min(0.0)
+    .max(180.0)
+    .listen()
+    .name("Venus");
+  folderElongations
+    .add(o, "marsElongation")
+    .min(0.0)
+    .max(180.0)
+    .listen()
+    .name("Mars");
+  folderElongations
+    .add(o, "jupiterElongation")
+    .min(0.0)
+    .max(180.0)
+    .listen()
+    .name("Jupiter");
+  folderElongations
+    .add(o, "saturnElongation")
+    .min(0.0)
+    .max(180.0)
+    .listen()
+    .name("Saturn");
 
-  let folderElongations=gui.addFolder("Elongations");
-  folderElongations.add(o,"moonElongation").min(0.0).max(180.0).listen().name("Moon")
-  folderElongations.add(o,"mercuryElongation").min(0.0).max(180.0).listen().name("Mercury")
-  folderElongations.add(o,"venusElongation").min(0.0).max(180.0).listen().name("Venus")
-  folderElongations.add(o,"marsElongation").min(0.0).max(180.0).listen().name("Mars")
-  folderElongations.add(o,"jupiterElongation").min(0.0).max(180.0).listen().name("Jupiter")
-  folderElongations.add(o,"saturnElongation").min(0.0).max(180.0).listen().name("Saturn")  
-  
   function changeSphereScale() {
-      celestialSphere.scale.set(o.cSphereSize, o.cSphereSize, o.cSphereSize);
-    
+    celestialSphere.scale.set(o.cSphereSize, o.cSphereSize, o.cSphereSize);
   }
   function changeZodiacScale() {
-      zodiac.scale.set(o.zodiacSize, o.zodiacSize, o.zodiacSize);
-    
+    zodiac.scale.set(o.zodiacSize, o.zodiacSize, o.zodiacSize);
   }
-  
-  let folderO = gui.addFolder('Stars & helper objects')
-  folderO.add(zodiac, 'visible').name('Zodiac');
+
+  let folderO = gui.addFolder("Stars & helper objects");
+  folderO.add(zodiac, "visible").name("Zodiac");
   //folderO.add(zodiac, 'scale.y', 0.1, 200).step(0.1).name('Zodiac size');
   //folderO.add(zodiac, 'renderOrder', 0, 200);
-  folderO.add(o, 'zodiacSize', 0.1, 10).step(0.1).name('Zodiac size').onChange(()=>{changeZodiacScale()})
+  folderO
+    .add(o, "zodiacSize", 0.1, 10)
+    .step(0.1)
+    .name("Zodiac size")
+    .onChange(() => {
+      changeZodiacScale();
+    });
   // folderO.add(zodiac.position, 'y', -10, 10).step(0.1).name('Zodiac position');
-  
-  folderO.add(o, 'Polar line').onFinishChange(()=>{
-    polarLine.visible = o['Polar line']
-  });
-  folderO.add(o, 'polarLineLength', 0.1, 50).name('Line length').onChange(()=>{
-      // polarLine.scale.x = o.polarLineLength
-      polarLine.scale.y = o.polarLineLength
-  });
 
-  
+  folderO.add(o, "Polar line").onFinishChange(() => {
+    polarLine.visible = o["Polar line"];
+  });
+  folderO
+    .add(o, "polarLineLength", 0.1, 50)
+    .name("Line length")
+    .onChange(() => {
+      // polarLine.scale.x = o.polarLineLength
+      polarLine.scale.y = o.polarLineLength;
+    });
+
   // folderO.add(o, 'Axis helpers' ).onFinishChange(()=>{
   //     showHideAxisHelpers();
   //   });
-  
-  folderO.add(starsContainer, 'visible' ).name('Stars');
-  folderO.add(o, 'starNamesVisible').name('Star names').onChange(()=>{
-    starsContainer.children.forEach(
-      function(starPos) {
+
+  folderO.add(starsContainer, "visible").name("Stars");
+  folderO
+    .add(o, "starNamesVisible")
+    .name("Star names")
+    .onChange(() => {
+      starsContainer.children.forEach(function (starPos) {
         const nameTag = starPos.children[1];
         nameTag.visible = o.starNamesVisible;
       });
-    
-  });
-  folderO.add(constContainer, 'visible').name('Constellations')
-  
-  folderO.add(o, 'starDistanceScaleFact', 0.1, 2).step(0.1).name('Star distance').onChange(()=>{
-    starsContainer.children.forEach(
-      function(starPos) {
+    });
+  folderO.add(constContainer, "visible").name("Constellations");
+
+  folderO
+    .add(o, "starDistanceScaleFact", 0.1, 2)
+    .step(0.1)
+    .name("Star distance")
+    .onChange(() => {
+      starsContainer.children.forEach(function (starPos) {
         const star = starPos.children[0];
         star.position.x = o.starDistance * o.starDistanceScaleFact;
         const nameTag = starPos.children[1];
         nameTag.position.x = o.starDistance * o.starDistanceScaleFact;
       });
-    celestialSphere.scale.set(o.starDistanceScaleFact, o.starDistanceScaleFact, o.starDistanceScaleFact);
-    plane.scale.set(o.starDistanceScaleFact, o.starDistanceScaleFact, o.starDistanceScaleFact);
-    constContainer.scale.set(o.starDistanceScaleFact, o.starDistanceScaleFact, o.starDistanceScaleFact);
+      celestialSphere.scale.set(
+        o.starDistanceScaleFact,
+        o.starDistanceScaleFact,
+        o.starDistanceScaleFact
+      );
+      plane.scale.set(
+        o.starDistanceScaleFact,
+        o.starDistanceScaleFact,
+        o.starDistanceScaleFact
+      );
+      constContainer.scale.set(
+        o.starDistanceScaleFact,
+        o.starDistanceScaleFact,
+        o.starDistanceScaleFact
+      );
+    });
 
-  });
-  
-  folderO.add(o, 'starSize', 0.1, 5).step(0.1).name('Star sizes').onChange(()=>{
-    starsContainer.children.forEach(
-      function(starPos) {
+  folderO
+    .add(o, "starSize", 0.1, 5)
+    .step(0.1)
+    .name("Star sizes")
+    .onChange(() => {
+      starsContainer.children.forEach(function (starPos) {
         const star = starPos.children[0];
-        star.scale.x = o.starSize
-        star.scale.y = o.starSize
-        star.scale.z = o.starSize
+        star.scale.x = o.starSize;
+        star.scale.y = o.starSize;
+        star.scale.z = o.starSize;
       });
-  });
- 
+    });
 
-        // const star = starPos.children[0];
-//     const nametag = star.children[0];
-//     const scale = scaleVec.subVectors(star.getWorldPosition(starPosVec), camera.position).length() / scaleFactor;
-//     nametag.scale.set(scale, scale, 1);
-//   });})
-  
-//   folderO.add(o, 'Stars' ).onFinishChange(()=>{
-//     showHideStars();
-//   });
-  
-//   folderO.add(o, 'Star distance', 0.1, 20).onChange(() => {
-//     setStarDistance();
-//   });
- folderO.add(celestialSphere, 'visible').name('Celestial sphere')
- folderO.add(plane, 'visible').name('Ecliptic grid')
+  // const star = starPos.children[0];
+  //     const nametag = star.children[0];
+  //     const scale = scaleVec.subVectors(star.getWorldPosition(starPosVec), camera.position).length() / scaleFactor;
+  //     nametag.scale.set(scale, scale, 1);
+  //   });})
+
+  //   folderO.add(o, 'Stars' ).onFinishChange(()=>{
+  //     showHideStars();
+  //   });
+
+  //   folderO.add(o, 'Star distance', 0.1, 20).onChange(() => {
+  //     setStarDistance();
+  //   });
+  // folderO.add(celestialSphere, "visible").name("Celestial sphere");
+  folderO.add(plane, "visible").name("Ecliptic grid");
 
   // folderO.add(o, 'cSphereSize', 0.1, 50).step(0.1).name('Sphere size').onChange(()=>{changeSphereScale()})
   // folderO.add(barycenter, 'visible').name('Barycenter')
-  
+
   // folderO.add(o, infotext ).onFinishChange(()=>{
   //   showHideInfoText();
   // });
   // folderO.add(o, 'Performance').onFinishChange(() => {
-  //   if (o.Performance) {stats.dom.style.visibility = 'visible'} 
+  //   if (o.Performance) {stats.dom.style.visibility = 'visible'}
   //   else {stats.dom.style.visibility = 'hidden'}
   // });
 
-  function changePlanetScale(){
-    planets.forEach(obj => {
-      obj.planetObj.scale.x = o.Size
-      obj.planetObj.scale.y = o.Size
-      obj.planetObj.scale.z = o.Size
-    });  
+  function changePlanetScale() {
+    planets.forEach((obj) => {
+      obj.planetObj.scale.x = o.Size;
+      obj.planetObj.scale.y = o.Size;
+      obj.planetObj.scale.z = o.Size;
+    });
   }
-  
-  let folderPlanets = gui.addFolder('Planets');
+
+  let folderPlanets = gui.addFolder("Planets");
   // folderPlanets.open();
-  folderPlanets.add(o, 'Orbits' ).onFinishChange(()=>{
+  folderPlanets.add(o, "Orbits").onFinishChange(() => {
     showHideOrbits();
   });
 
-  folderPlanets.add(o, 'Size', 0.4, 1.4).onChange(()=>{changePlanetScale()})
-  planets.forEach(obj => {
+  folderPlanets.add(o, "Size", 0.4, 1.4).onChange(() => {
+    changePlanetScale();
+  });
+  planets.forEach((obj: any) => {
     if (!obj.isDeferent) {
-      folderPlanets.add(obj, 'visible').name(obj.name).onFinishChange(()=>{
-        showHideObject(obj);
-      });
+      folderPlanets
+        .add(obj, "visible")
+        .name(obj.name)
+        .onFinishChange(() => {
+          showHideObject(obj);
+        });
     }
-  })
-  function changeTraceScale(){
-    tracePlanets.forEach(obj => {
+  });
+  function changeTraceScale() {
+    tracePlanets.forEach((obj) => {
       if (obj.traceLine) {
-        obj.traceLine.material.size = obj.size*10 * o.traceSize
+        obj.traceLine.material.size = obj.size * 10 * o.traceSize;
       }
-    });  
+    });
   }
-  
-  let sFolder = gui.addFolder('Settings')
-  const lightFolder = sFolder.addFolder("Light and color")
+
+  let sFolder = gui.addFolder("Settings");
+  const lightFolder = sFolder.addFolder("Light and color");
   //lightFolder.open();
-  lightFolder.add(o, 'ambientLight', 0.1, 4).name('Amb. light').onChange(()=>{
-    ambientLight.intensity = o.ambientLight})
-  lightFolder.add(o, 'sunLight', 0.1, 4).name('Sunlight').onChange(()=>{
-    light.intensity = o.sunLight})
-  lightFolder.addColor(o, 'background').onChange(()=> {
-    scene.background = new THREE.Color(o.background)})
+  lightFolder
+    .add(o, "ambientLight", 0.1, 4)
+    .name("Amb. light")
+    .onChange(() => {
+      ambientLight.intensity = o.ambientLight;
+    });
+  lightFolder
+    .add(o, "sunLight", 0.1, 4)
+    .name("Sunlight")
+    .onChange(() => {
+      light.intensity = o.sunLight;
+    });
+  lightFolder.addColor(o, "background").onChange(() => {
+    scene.background = new THREE.Color(o.background);
+  });
 
-  lightFolder.add(o, 'Shadows' )
-  let folderDef = sFolder.addFolder('Deferents show/hide');
-  planets.forEach(obj => {
+  lightFolder.add(o, "Shadows");
+  let folderDef = sFolder.addFolder("Deferents show/hide");
+  planets.forEach((obj) => {
     if (obj.isDeferent) {
-      folderDef.add(obj, 'visible').name(obj.name).onFinishChange(()=>{
-        showHideObject(obj);
-      });
+      folderDef
+        .add(obj, "visible")
+        .name(obj.name)
+        .onFinishChange(() => {
+          showHideObject(obj);
+        });
     }
-  })
+  });
 
-  sFolder.add(o, 'Save settings' )
-  sFolder.add(o, 'Load settings' )
+  sFolder.add(o, "Save settings");
+  sFolder.add(o, "Load settings");
 
-
-
-  let oFolder 
-  planets.forEach(obj => {
-    oFolder = sFolder.addFolder(obj.name)
-    addSetting(obj, 'startPos', 'Start Position', oFolder)
-    addSetting(obj, 'speed', 'Speed', oFolder)
-    addSetting(obj, 'orbitCentera', 'Orbit center A', oFolder)
-    addSetting(obj, 'orbitCenterb', 'Orbit center B', oFolder)
-    addSetting(obj, 'orbitCenterc', 'Orbit center C', oFolder)
-    addSetting(obj, 'orbitTilta', 'Orbit tilt A', oFolder)
-    addSetting(obj, 'orbitTiltb', 'Orbit tilt B', oFolder)
+  let oFolder;
+  planets.forEach((obj) => {
+    oFolder = sFolder.addFolder(obj.name);
+    addSetting(obj, "startPos", "Start Position", oFolder);
+    addSetting(obj, "speed", "Speed", oFolder);
+    addSetting(obj, "orbitCentera", "Orbit center A", oFolder);
+    addSetting(obj, "orbitCenterb", "Orbit center B", oFolder);
+    addSetting(obj, "orbitCenterc", "Orbit center C", oFolder);
+    addSetting(obj, "orbitTilta", "Orbit tilt A", oFolder);
+    addSetting(obj, "orbitTiltb", "Orbit tilt B", oFolder);
     if (obj.settingsVisible) {
-      oFolder.open()
+      oFolder.open();
     }
-  })
+  });
 
   function addSetting(obj, attrib, name, folder) {
-    obj[name] = obj[attrib].toString()
-    folder.add(obj, name).listen().onFinishChange(()=>{
-      if (isNumeric(obj[name])) {
-        obj[attrib] = Number(obj[name])
-        obj[name] = obj[attrib].toString()
-        updatePlanet(obj)
-        initTrace(obj)
-      } else {
-        obj[name] = obj[attrib].toString()
-      }
-    })
+    obj[name] = obj[attrib].toString();
+    folder
+      .add(obj, name)
+      .listen()
+      .onFinishChange(() => {
+        if (isNumeric(obj[name])) {
+          obj[attrib] = Number(obj[name]);
+          obj[name] = obj[attrib].toString();
+          updatePlanet(obj);
+          initTrace(obj);
+        } else {
+          obj[name] = obj[attrib].toString();
+        }
+      });
   }
+}
 
-}  
-
-
-const stats = new Stats()
-document.body.appendChild( stats.dom )
-if (!o.Perfomance) stats.dom.style.visibility = 'hidden';
+const stats = new Stats();
+document.body.appendChild(stats.dom);
+if (!o.Perfomance) stats.dom.style.visibility = "hidden";
 
 // stats.dom.container.style.visibility = 'hidden';
-const clock = new THREE.Clock(); 
+const clock = new THREE.Clock();
 
-window.addEventListener('resize', onWindowResize, false);
+window.addEventListener("resize", onWindowResize, false);
 onWindowResize();
-
 
 // window.addEventListener('resize', onWindowResize, false);
 // onWindowResize();
@@ -2347,21 +1066,20 @@ onWindowResize();
 // var orbit;
 var pause = true;
 
-
-planets.forEach(obj => {
-  showHideObject(obj)
+planets.forEach((obj) => {
+  showHideObject(obj);
 });
 showHideAxisHelpers();
 // showHideStars();
 showHideCameraHelper();
 showHideInfoText();
 
-o.pos = 0
-let currPos 
+o.pos = 0;
+let currPos;
 let tlapsed = 0;
-renderer.render(scene, camera);//renderer needs to be called otherwise the position are wrong
+renderer.render(scene, camera); //renderer needs to be called otherwise the position are wrong
 const centerPosVec = new THREE.Vector3();
-const starPosVec  = new THREE.Vector3();
+const starPosVec = new THREE.Vector3();
 const scaleVec = new THREE.Vector3();
 //*************************************************************
 //THE RENDER LOOP
@@ -2369,68 +1087,60 @@ const scaleVec = new THREE.Vector3();
 function render() {
   requestAnimationFrame(render);
   stats.update();
-//   if (o.Target !== "") {
-  
-//   camera.copy(fakeCamera)
+  //   if (o.Target !== "") {
+
+  //   camera.copy(fakeCamera)
 
   if (Object.keys(o.lookAtObj).length !== 0) {
     //controls.target = earth.planetObj.getWorldPosition(new THREE.Vector3())
-    
-    controls.target = o.lookAtObj.pivotObj.getWorldPosition(centerPosVec)
+
+    controls.target = o.lookAtObj.pivotObj.getWorldPosition(centerPosVec);
     // controls.target = o.lookAtObj.planetObj.getWorldPosition(new THREE.Vector3())
     controls.update();
-  } 
+  }
   let delta = clock.getDelta();
-  tlapsed += delta
+  tlapsed += delta;
   if (tlapsed > 0.05) {
     tlapsed = 0;
-    o['Position'] = o.pos
+    o["Position"] = o.pos;
     o.Day = posToDays(o.pos);
     o.julianDay = o.Day + 2451717;
-    o.Date = daysToDate(o.Day)
-    o.Time = posToTime(o.pos)
-    o.worldCamX = Math.round(camera.position.x)
-    o.worldCamY = Math.round(camera.position.y)
-    o.worldCamZ = Math.round(camera.position.z)
-    renderer.shadowMap.enabled = o['Shadows'];
-
-
+    o.Date = daysToDate(o.Day);
+    o.Time = posToTime(o.pos);
+    o.worldCamX = Math.round(camera.position.x);
+    o.worldCamY = Math.round(camera.position.y);
+    o.worldCamZ = Math.round(camera.position.z);
+    renderer.shadowMap.enabled = o["Shadows"];
   }
   if (o.Run) {
     o.pos += Number(o.speedFact) * o.speed * delta;
   }
-  //tracePlanet(mars, o.pos);  
+  //tracePlanet(mars, o.pos);
   // lineTrace(o.pos);
   trace(o.pos);
   moveModel(o.pos);
   updateElongations();
   updatePositions();
   trackSun();
-  if (o['Earth camera']) {
+  if (o["Earth camera"]) {
     renderer.render(scene, planetCamera);
-
   } else {
     renderer.render(scene, camera);
-
   }
-  
-  
-  starsContainer.children.forEach(function(starPos) {
 
+  starsContainer.children.forEach(function (starPos) {
     const scaleFactor = 30;
     const star = starPos.children[0];
     const nametag = starPos.children[1];
     // const scale = scaleVec.subVectors(nametag.getWorldPosition(starPosVec), camera.position).length() / scaleFactor;
-    const scale = scaleVec.subVectors(star.getWorldPosition(starPosVec), camera.position).length() / scaleFactor;
+    const scale =
+      scaleVec
+        .subVectors(star.getWorldPosition(starPosVec), camera.position)
+        .length() / scaleFactor;
     nametag.scale.set(scale, scale, 1);
     // NO EFFECT
-    // nametag.position.copy(star.position) 
-
+    // nametag.position.copy(star.position)
   });
-  
-  
-
-  
 }
 render();
 //*************************************************************
@@ -2438,191 +1148,195 @@ render();
 //*************************************************************
 
 function updatePositions() {
-  scene.updateMatrixWorld() //No effect(?)
-
+  scene.updateMatrixWorld(); //No effect(?)
 
   const csPos = new THREE.Vector3();
   celestialSphere.getWorldPosition(csPos);
 
   const sphericalPos = new THREE.Spherical();
 
-  tracePlanets.forEach(obj => {    
+  tracePlanets.forEach((obj: any) => {
     const planetPos = new THREE.Vector3();
-    const lookAtDir = new THREE.Vector3(0,0,1);
-    obj.planetObj.getWorldPosition(planetPos)
-    csLookAtObj.lookAt(planetPos)
+    const lookAtDir = new THREE.Vector3(0, 0, 1);
+    obj.planetObj.getWorldPosition(planetPos);
+    csLookAtObj.lookAt(planetPos);
     lookAtDir.applyQuaternion(csLookAtObj.quaternion);
-    lookAtDir.setLength(csPos.distanceTo(planetPos))
-    sphericalPos.setFromVector3(lookAtDir)
-    obj.ra = radToRa(sphericalPos.theta)
-    obj.dec = radToDec(sphericalPos.phi)
-    
+    lookAtDir.setLength(csPos.distanceTo(planetPos));
+    sphericalPos.setFromVector3(lookAtDir);
+    obj.ra = radToRa(sphericalPos.theta);
+    obj.dec = radToDec(sphericalPos.phi);
+
     if (obj.name === "Moon") {
-      obj.distKm = (sphericalPos.radius/100 * 149597871/39.2078).toFixed(2)
-      obj.dist = (sphericalPos.radius/100/39.2078).toFixed(8)
+      obj.distKm = (
+        ((sphericalPos.radius / 100) * 149597871) /
+        39.2078
+      ).toFixed(2);
+      obj.dist = (sphericalPos.radius / 100 / 39.2078).toFixed(8);
     } else {
-      obj.distKm = (sphericalPos.radius/100 * 149597871).toFixed(2)
-      obj.dist = (sphericalPos.radius/100).toFixed(8)
+      obj.distKm = ((sphericalPos.radius / 100) * 149597871).toFixed(2);
+      obj.dist = (sphericalPos.radius / 100).toFixed(8);
     }
   });
   //Get camera pos
   const cameraPos = new THREE.Vector3();
-  const lookAtDir = new THREE.Vector3(0,0,1);
-  camera.getWorldPosition(cameraPos)
-  csLookAtObj.lookAt(cameraPos)
+  const lookAtDir = new THREE.Vector3(0, 0, 1);
+  camera.getWorldPosition(cameraPos);
+  csLookAtObj.lookAt(cameraPos);
   lookAtDir.applyQuaternion(csLookAtObj.quaternion);
   lookAtDir.setLength(csPos.distanceTo(cameraPos));
   sphericalPos.setFromVector3(lookAtDir);
   o.worldCamRa = radToRa(sphericalPos.theta);
   o.worldCamDec = radToDec(sphericalPos.phi);
-  o.worldCamDistKm = (sphericalPos.radius/100 * 149597871/39.2078).toFixed(2);
-  o.worldCamDist = (sphericalPos.radius/100).toFixed(8);
-  
-
-
-  
+  o.worldCamDistKm = (
+    ((sphericalPos.radius / 100) * 149597871) /
+    39.2078
+  ).toFixed(2);
+  o.worldCamDist = (sphericalPos.radius / 100).toFixed(8);
 }
 
-function drawSunLine(){
+function drawSunLine() {
   const csPos = new THREE.Vector3();
   celestialSphere.getWorldPosition(csPos);
-  const lookAtDir = new THREE.Vector3(0,0,1);
+  const lookAtDir = new THREE.Vector3(0, 0, 1);
   const planetPos = new THREE.Vector3();
 
   const sphericalPos = new THREE.Spherical();
-  
-  sun.planetObj.getWorldPosition(planetPos)
-  csLookAtObj.lookAt(planetPos)
-  lookAtDir.applyQuaternion(csLookAtObj.quaternion);
-  lookAtDir.setLength(csPos.distanceTo(planetPos))
-  
-  
-  sphericalPos.setFromVector3(lookAtDir)
 
-  
+  sun.planetObj.getWorldPosition(planetPos);
+  csLookAtObj.lookAt(planetPos);
+  lookAtDir.applyQuaternion(csLookAtObj.quaternion);
+  lookAtDir.setLength(csPos.distanceTo(planetPos));
+
+  sphericalPos.setFromVector3(lookAtDir);
+
   var material = new THREE.LineBasicMaterial({
-    color: 0x0000ff
+    color: 0x0000ff,
   });
 
   var geometry = new THREE.Geometry();
   geometry.vertices.push(
-    new THREE.Vector3(0,0,0),
+    new THREE.Vector3(0, 0, 0),
     new THREE.Vector3().setFromSpherical(sphericalPos)
   );
 
-  var line = new THREE.Line( geometry, material );
-  celestialSphere.add( line );
-  
-  console.log(sphericalPos.theta)
-  
-  sphericalPos.theta = sun.ra 
-  sphericalPos.phi =  sun.dec
-  sphericalPos.radius = sun.dist
+  var line = new THREE.Line(geometry, material);
+  celestialSphere.add(line);
 
-  
+  console.log(sphericalPos.theta);
+
+  sphericalPos.theta = sun.ra;
+  sphericalPos.phi = sun.dec;
+  sphericalPos.radius = sun.dist;
+
   var material2 = new THREE.LineBasicMaterial({
-    color: 0xff0000
+    color: 0xff0000,
   });
 
   var geometry2 = new THREE.Geometry();
   geometry2.vertices.push(
-    new THREE.Vector3(0,0,0),
+    new THREE.Vector3(0, 0, 0),
     new THREE.Vector3().setFromSpherical(sphericalPos)
   );
 
-  var line2 = new THREE.Line( geometry2, material2 );
-  celestialSphere.add( line2 );
-  
-  
-  
+  var line2 = new THREE.Line(geometry2, material2);
+  celestialSphere.add(line2);
 }
 
-
 function trace(pos) {
-    tracePlanets.forEach(obj => {
-      tracePlanet(obj, pos)
-    });        
+  tracePlanets.forEach((obj) => {
+    tracePlanet(obj, pos);
+  });
   // tracePlanet(mars, pos)
 }
 
-  function initTrace(obj) {
-    obj.traceStartPos = obj.traceCurrPos = o.pos; 
-    obj.traceArrIndex = 0;
-  }
+function initTrace(obj) {
+  obj.traceStartPos = obj.traceCurrPos = o.pos;
+  obj.traceArrIndex = 0;
+}
 
 function setTraceMaterial(obj) {
-  let lineMaterial 
-  let lineGeometry
+  let lineMaterial;
+  let lineGeometry;
   if (!obj.traceLine) {
-    lineMaterial = new THREE.PointsMaterial( { 
-      color: obj.color,                                          
-      size: obj.size*10,
+    lineMaterial = new THREE.PointsMaterial({
+      color: obj.color,
+      size: obj.size * 10,
       //sizeAttenuation: false,
       transparent: true,
       opacity: 0.7,
-      alphaTest : 0.5,
-      map: new THREE.TextureLoader().load( "https://raw.githubusercontent.com/pholmq/tsnova-resources/master/disc.png" ),
-      
-    } )
-            
-    lineGeometry = new THREE.Geometry()
-    obj.traceLine = new THREE.Points( lineGeometry, lineMaterial )
+      alphaTest: 0.5,
+      map: new THREE.TextureLoader().load(
+        "https://raw.githubusercontent.com/pholmq/tsnova-resources/master/disc.png"
+      ),
+    });
+
+    lineGeometry = new THREE.Geometry();
+    obj.traceLine = new THREE.Points(lineGeometry, lineMaterial);
     obj.traceLine.sortParticles = true;
-    obj.traceLine.geometry.vertices.length = (obj.traceLength/obj.traceStep).toFixed()
+    obj.traceLine.geometry.vertices.length = (
+      obj.traceLength / obj.traceStep
+    ).toFixed();
   } else {
-    scene.remove(obj.traceLine)
-    lineMaterial = obj.traceLine.material 
-    lineGeometry = obj.traceLine.geometry
-
-  }  
-  if (o.Lines) {
-    obj.traceLine = new THREE.Line( lineGeometry, lineMaterial )    
-  } else {
-    obj.traceLine = new THREE.Points( lineGeometry, lineMaterial )    
-    
+    scene.remove(obj.traceLine);
+    lineMaterial = obj.traceLine.material;
+    lineGeometry = obj.traceLine.geometry;
   }
-  scene.add(obj.traceLine)
+  if (o.Lines) {
+    obj.traceLine = new THREE.Line(lineGeometry, lineMaterial);
+  } else {
+    obj.traceLine = new THREE.Points(lineGeometry, lineMaterial);
+  }
+  scene.add(obj.traceLine);
 }
-
 
 function tracePlanet(obj, pos) {
   let update = false;
-  if (!obj.traceOn || !o.traceBtn) { obj.traceLine = false; return;}
-  if (pos < obj.traceStartPos) {initTrace(obj); update = true}
-  if (pos < obj.traceCurrPos) {obj.traceCurrPos = obj.traceStartPos; obj.traceArrIndex = 0; update = true}
+  if (!obj.traceOn || !o.traceBtn) {
+    obj.traceLine = false;
+    return;
+  }
+  if (pos < obj.traceStartPos) {
+    initTrace(obj);
+    update = true;
+  }
+  if (pos < obj.traceCurrPos) {
+    obj.traceCurrPos = obj.traceStartPos;
+    obj.traceArrIndex = 0;
+    update = true;
+  }
   if (obj.traceCurrPos + obj.traceStep > pos && !update) return;
 
-  let firstRun = false
+  let firstRun = false;
   if (obj.traceArrIndex === 0) firstRun = true;
-  
+
   if (!obj.traceLine) {
-    setTraceMaterial(obj)
-  }    
-  let nextPos = obj.traceCurrPos
-  let vertArray = obj.traceLine.geometry.vertices
-  while(nextPos < pos) {
+    setTraceMaterial(obj);
+  }
+  let nextPos = obj.traceCurrPos;
+  let vertArray = obj.traceLine.geometry.vertices;
+  while (nextPos < pos) {
     moveModel(nextPos);
     earth.containerObj.updateMatrixWorld();
-    let epos = new THREE.Vector3(); 
+    let epos = new THREE.Vector3();
     obj.planetObj.getWorldPosition(epos); //NEEDS to be a new vector every time! (declared inside the loop)
     if (obj.traceArrIndex < vertArray.length) {
-      vertArray[obj.traceArrIndex] = epos;    
-      obj.traceArrIndex ++
+      vertArray[obj.traceArrIndex] = epos;
+      obj.traceArrIndex++;
     } else {
-      for(let i = 0; i < vertArray.length-1; i++) {
-        vertArray[i] = vertArray[i+1]
+      for (let i = 0; i < vertArray.length - 1; i++) {
+        vertArray[i] = vertArray[i + 1];
       }
-      vertArray[vertArray.length-1] = epos;          
+      vertArray[vertArray.length - 1] = epos;
     }
-    nextPos += obj.traceStep
+    nextPos += obj.traceStep;
   }
   if (firstRun) {
-    //We need to pad the vertices array 
+    //We need to pad the vertices array
     let index = obj.traceArrIndex;
     while (index < obj.traceLine.geometry.vertices.length) {
-      obj.traceLine.geometry.vertices[index ++] = 0;    
-    }    
-  }  
+      obj.traceLine.geometry.vertices[index++] = 0;
+    }
+  }
   obj.traceLine.geometry.verticesNeedUpdate = true;
   obj.traceCurrPos = nextPos - obj.traceStep;
   obj.traceLine.visible = true;
@@ -2632,44 +1346,50 @@ function tracePlanet(obj, pos) {
 //set its rotation to the negative speed of Earths PVP orbit
 //2310 Not needed anymore since the zodiac has a fixed position now
 // var zodiacRotationSpeed = 0.0002479160869310127
-function moveModel(pos){
-  planets.forEach(obj => {
-    obj.orbitObj.rotation.y = obj.speed * pos - obj.startPos * (Math.PI/180)
+function moveModel(pos) {
+  planets.forEach((obj) => {
+    obj.orbitObj.rotation.y = obj.speed * pos - obj.startPos * (Math.PI / 180);
     if (obj.rotationSpeed) {
-      obj.planetObj.rotation.y = obj.rotationSpeed * pos 
+      obj.planetObj.rotation.y = obj.rotationSpeed * pos;
     }
-  })
- // zodiac.rotation.y = -Math.PI/3 + zodiacRotationSpeed * pos
+  });
+  // zodiac.rotation.y = -Math.PI/3 + zodiacRotationSpeed * pos
 }
-// Math.PI/6 + 
+// Math.PI/6 +
 function onWindowResize() {
-  if (o['Earth camera']) {
+  if (o["Earth camera"]) {
     planetCamera.aspect = window.innerWidth / window.innerHeight;
     planetCamera.updateProjectionMatrix();
   } else {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-
   }
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function addPolarGridHelper(inplanet) {
-  var polarGridHelper = new THREE.PolarGridHelper( 10, 16, 8, 64, 0x0000ff, 0x808080 );
+  var polarGridHelper = new THREE.PolarGridHelper(
+    10,
+    16,
+    8,
+    64,
+    0x0000ff,
+    0x808080
+  );
   inplanet.add(polarGridHelper);
 }
 
 function posToDays(pos) {
-  pos += sHour*12 //Set the clock to tweleve for pos 0
-	return Math.floor(pos/sDay)
+  pos += sHour * 12; //Set the clock to tweleve for pos 0
+  return Math.floor(pos / sDay);
 }
 
 function posToTime(pos) {
-  pos += sHour*12 //Set the clock to tweleve for pos 0
-	let days = pos/sDay - Math.floor(pos/sDay)
-  let hours = Math.floor(days*24);
-  let minutes = Math.floor((days*24 - hours) * 60);
-  let seconds = Math.round(((days*24 - hours) * 60 - minutes) * 60);
+  pos += sHour * 12; //Set the clock to tweleve for pos 0
+  let days = pos / sDay - Math.floor(pos / sDay);
+  let hours = Math.floor(days * 24);
+  let minutes = Math.floor((days * 24 - hours) * 60);
+  let seconds = Math.round(((days * 24 - hours) * 60 - minutes) * 60);
 
   if (seconds === 60) {
     seconds = 0;
@@ -2680,123 +1400,151 @@ function posToTime(pos) {
     minutes = 0;
     hours += 1;
   }
-  
-	let hh = ("0" + hours).slice(-2);
+
+  let hh = ("0" + hours).slice(-2);
   let mm = ("0" + minutes).slice(-2);
   let ss = ("0" + seconds).slice(-2);
-  
 
-  return hh + ":" + mm +":" + ss
+  return hh + ":" + mm + ":" + ss;
 }
 
 function timeToPos(value) {
   let aTime = value.split(":");
-  let pos = aTime[0] * sHour + aTime[1] * sMinute + aTime[2] * sSecond
-  return pos-= sHour*12 //Set the clock to tweleve for pos 0
+  let pos = aTime[0] * sHour + aTime[1] * sMinute + aTime[2] * sSecond;
+  return (pos -= sHour * 12); //Set the clock to tweleve for pos 0
 }
 
 //console.log(raToRadians("00:00:60"))
 function raToRadians(rightAscension) {
   const time = rightAscension.split(":");
-  const deg = (Number(time[0]) + time[1]/60 + time[2]/3600)*15;
+  const deg = (Number(time[0]) + time[1] / 60 + time[2] / 3600) * 15;
   //console.log(deg)
-  return deg * (Math.PI/180);
+  return deg * (Math.PI / 180);
 }
 
 function radiansToRa(radians) {
-  const raDec = radians * 12/Math.PI
+  const raDec = (radians * 12) / Math.PI;
   const hours = Math.floor(raDec);
-  const minutes = raDec % 1 
+  const minutes = raDec % 1;
 }
-
 
 //console.log(decToRadians("360:00:00"))
 function decToRadians(declination) {
   const time = declination.split(":");
-  const deg = Number(time[0]) + time[1]/60 + time[2]/3600;
+  const deg = Number(time[0]) + time[1] / 60 + time[2] / 3600;
   //console.log(deg)
-  return deg * (Math.PI/180);
+  return deg * (Math.PI / 180);
 }
 
 function raToRadOld(ra) {
-  const hours = ra.split('h')[0];
-  const minutes = ra.split('h')[1].split('m')[0]
-  const seconds = ra.split('h')[1].split('m')[1].split('s')[0]
-  return hours*Math.PI/12 + minutes*(Math.PI/(12*60)) + seconds*(Math.PI/(12*3600))
+  const hours = ra.split("h")[0];
+  const minutes = ra.split("h")[1].split("m")[0];
+  const seconds = ra.split("h")[1].split("m")[1].split("s")[0];
+  return (
+    (hours * Math.PI) / 12 +
+    minutes * (Math.PI / (12 * 60)) +
+    seconds * (Math.PI / (12 * 3600))
+  );
 }
 
-   // ra: "02h31m49.09s", //02h 31m 49.09s "02h 31m 48.7s"
-   //  dec: "89d15m50.8s", //89° 15′ 50.8 "+89° 15′ 51″"
+// ra: "02h31m49.09s", //02h 31m 49.09s "02h 31m 48.7s"
+//  dec: "89d15m50.8s", //89° 15′ 50.8 "+89° 15′ 51″"
 
 function raToRad(ra) {
-  ra.replace(/\s+/g, '');
-  const hours = ra.split('h')[0];
-  const minutes = ra.split('h')[1].split('m')[0]
-  const seconds = ra.split('h')[1].split('m')[1].split('s')[0]
-  return hours*Math.PI/12 + minutes*(Math.PI/(12*60)) + seconds*(Math.PI/(12*3600))
+  ra.replace(/\s+/g, "");
+  const hours = ra.split("h")[0];
+  const minutes = ra.split("h")[1].split("m")[0];
+  const seconds = ra.split("h")[1].split("m")[1].split("s")[0];
+  return (
+    (hours * Math.PI) / 12 +
+    minutes * (Math.PI / (12 * 60)) +
+    seconds * (Math.PI / (12 * 3600))
+  );
 }
 
 function decToRadOld(dec) {
-  const degrees = dec.split('d')[0];
-  const minutes = dec.split('d')[1].split('m')[0]
-  const seconds = dec.split('d')[1].split('m')[1].split('s')[0]
-  return degrees*Math.PI/180 + minutes*(Math.PI/(180*60)) + seconds*(Math.PI/(180*3600))
+  const degrees = dec.split("d")[0];
+  const minutes = dec.split("d")[1].split("m")[0];
+  const seconds = dec.split("d")[1].split("m")[1].split("s")[0];
+  return (
+    (degrees * Math.PI) / 180 +
+    minutes * (Math.PI / (180 * 60)) +
+    seconds * (Math.PI / (180 * 3600))
+  );
 }
 
 function decToRad(dec) {
-  dec.replace(/\s+/g, '');
-  const degrees = dec.split('°')[0];
-  const minutes = dec.split('°')[1].split('′')[0]
-  const seconds = dec.split('°')[1].split('′')[1].split('″')[0]
-  return degrees*Math.PI/180 + minutes*(Math.PI/(180*60)) + seconds*(Math.PI/(180*3600))
+  dec.replace(/\s+/g, "");
+  const degrees = dec.split("°")[0];
+  const minutes = dec.split("°")[1].split("′")[0];
+  const seconds = dec.split("°")[1].split("′")[1].split("″")[0];
+  return (
+    (degrees * Math.PI) / 180 +
+    minutes * (Math.PI / (180 * 60)) +
+    seconds * (Math.PI / (180 * 3600))
+  );
 }
 
-function radToRa(rad){
-  if ( rad < 0 ) {rad = rad + Math.PI*2}
-  const raDec = rad * 12/Math.PI
+function radToRa(rad) {
+  if (rad < 0) {
+    rad = rad + Math.PI * 2;
+  }
+  const raDec = (rad * 12) / Math.PI;
   const hours = Math.floor(raDec);
-  const minutesSeconds = (raDec - hours) * 60
-  const minutes = Math.floor((raDec - hours) * 60)
-  const seconds = (minutesSeconds - minutes) * 60
-  return leadZero(hours) + "h" + leadZero(minutes) + "m" + leadZero(seconds.toFixed(0)) + "s"
-  }
+  const minutesSeconds = (raDec - hours) * 60;
+  const minutes = Math.floor((raDec - hours) * 60);
+  const seconds = (minutesSeconds - minutes) * 60;
+  return (
+    leadZero(hours) +
+    "h" +
+    leadZero(minutes) +
+    "m" +
+    leadZero(seconds.toFixed(0)) +
+    "s"
+  );
+}
 
-function radToDec(rad){
+function radToDec(rad) {
   if (rad <= 0) {
-    rad = rad + Math.PI/2
+    rad = rad + Math.PI / 2;
   } else {
-    rad = Math.PI/2 - rad
+    rad = Math.PI / 2 - rad;
   }
-  var degDec = rad * 180/Math.PI
-  var degreesSign=""
+  var degDec = (rad * 180) / Math.PI;
+  var degreesSign = "";
 
-  if(degDec<0)
-  {
-    degDec*=-1.0
-    degreesSign="-"
+  if (degDec < 0) {
+    degDec *= -1.0;
+    degreesSign = "-";
   }
 
   const degrees = Math.floor(degDec);
-  const minutesSeconds = (degDec - degrees) * 60
-  const minutes = Math.floor((degDec - degrees) * 60)
-  const seconds = (minutesSeconds - minutes) * 60
-  return leadZero(degreesSign+degrees, true) + "\xB0" + leadZero(minutes) + "\'" + leadZero(seconds.toFixed(0)) + "\""
+  const minutesSeconds = (degDec - degrees) * 60;
+  const minutes = Math.floor((degDec - degrees) * 60);
+  const seconds = (minutesSeconds - minutes) * 60;
+  return (
+    leadZero(degreesSign + degrees, true) +
+    "\xB0" +
+    leadZero(minutes) +
+    "'" +
+    leadZero(seconds.toFixed(0)) +
+    '"'
+  );
 }
 
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
-function leadZero(n, plus){
-    let sign;
-    n < 0 ? sign = "-": sign = "";
-    if (sign === "" && plus) {
-      sign = "+"
-    }
-    n = Math.abs(n);
-    return n > 9 ? sign + n: sign + "0" + n;
+function leadZero(n, plus) {
+  let sign;
+  n < 0 ? (sign = "-") : (sign = "");
+  if (sign === "" && plus) {
+    sign = "+";
+  }
+  n = Math.abs(n);
+  return n > 9 ? sign + n : sign + "0" + n;
 }
-
 
 function isValidTime(value) {
   //check input
@@ -2806,11 +1554,11 @@ function isValidTime(value) {
     return false;
   }
   //Check with regex that we only have numbers and a valid time
-  if (!/^\d+$/.test(aTime[0]) || aTime[0].length != 2 ) return false;
+  if (!/^\d+$/.test(aTime[0]) || aTime[0].length != 2) return false;
   if (aTime[0] > 24) return false;
-  if (!/^\d+$/.test(aTime[1]) || aTime[1].length != 2 ) return false;
+  if (!/^\d+$/.test(aTime[1]) || aTime[1].length != 2) return false;
   if (aTime[1] > 59) return false;
-  if (!/^\d+$/.test(aTime[2]) || aTime[2].length != 2 ) return false;
+  if (!/^\d+$/.test(aTime[2]) || aTime[2].length != 2) return false;
   if (aTime[2] > 59) return false;
 
   return true;
@@ -2824,30 +1572,30 @@ function isValidDate(value) {
     aDate.shift();
   }
   if (aDate.length > 3) {
-  	//Only year-month-day allowed
+    //Only year-month-day allowed
     return false;
   }
   //Check with regex that we only have numbers and a (probably) valid date
-  if (!/^\d+$/.test(aDate[0]) || aDate[0].length > 20 ) {
+  if (!/^\d+$/.test(aDate[0]) || aDate[0].length > 20) {
     return false;
   }
-  if (!/^\d+$/.test(aDate[1]) || aDate[1].length != 2 ) {
+  if (!/^\d+$/.test(aDate[1]) || aDate[1].length != 2) {
     return false;
   }
   if (aDate[1] > 12 || aDate[1] < 1) {
-    return false;  
+    return false;
   }
-  if (!/^\d+$/.test(aDate[2]) || aDate[2].length != 2 ) {
+  if (!/^\d+$/.test(aDate[2]) || aDate[2].length != 2) {
     return false;
   }
   if (aDate[2] > 31 || aDate[2] < 1) {
-    return false;  
+    return false;
   }
   // if (Number(aDate[0]) === 0) return false; //Year 0 is not allowed
-  if (Number(aDate[0]) === 1582 && Number(aDate[1]) === 10 ) {
+  if (Number(aDate[0]) === 1582 && Number(aDate[1]) === 10) {
     if (aDate[2] > 4 && aDate[2] < 15) return false; //Day 5-14, oct 1582 are not dates
-  } 
-  
+  }
+
   return true;
 }
 
@@ -2857,62 +1605,77 @@ function dateToDays(sDate) {
   //Calculates the number of days passed since 2000-06-21 for a date. Positive or negative
   //Taken from https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
   let aDate = sDate.split("-");
-  let y,m,d;
+  let y, m, d;
   if (aDate.length > 3) {
     //We had a minus sign first (a BC date)
-    y = -Number(aDate[1]); m = Number(aDate[2]); d = Number(aDate[3]);
-
+    y = -Number(aDate[1]);
+    m = Number(aDate[2]);
+    d = Number(aDate[3]);
   } else {
-    y = Number(aDate[0]); m = Number(aDate[1]); d = Number(aDate[2]);
-  };
-  
+    y = Number(aDate[0]);
+    m = Number(aDate[1]);
+    d = Number(aDate[2]);
+  }
+
   if (y < 1582) return julianDateToDays(sDate);
   if (y === 1582 && m < 10) return julianDateToDays(sDate);
-  if (y === 1582 && m === 10 && d < 15)  return julianDateToDays(sDate);
-  
+  if (y === 1582 && m === 10 && d < 15) return julianDateToDays(sDate);
+
   m = (m + 9) % 12;
-  y = y - Math.floor(m/10);
-  return 365*y + Math.floor(y/4) - Math.floor(y/100) + Math.floor(y/400) + Math.floor((m*306 + 5)/10) + ( d - 1 ) - 730597;
-};
+  y = y - Math.floor(m / 10);
+  return (
+    365 * y +
+    Math.floor(y / 4) -
+    Math.floor(y / 100) +
+    Math.floor(y / 400) +
+    Math.floor((m * 306 + 5) / 10) +
+    (d - 1) -
+    730597
+  );
+}
 
 function julianDateToDays(sDate) {
   //Calculates the number of days passed since 2000-06-21 for a date. Positive or negative
   //Taken from https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
   let aDate = sDate.split("-");
-  let y,m,d, jd;
+  let y, m, d, jd;
   if (aDate.length > 3) {
     //We had a minus sign first (a BC date)
-    y = -Number(aDate[1]); m = Number(aDate[2]); d = Number(aDate[3]);
-
+    y = -Number(aDate[1]);
+    m = Number(aDate[2]);
+    d = Number(aDate[3]);
   } else {
-    y = Number(aDate[0]); m = Number(aDate[1]); d = Number(aDate[2]);
-  };
-  
+    y = Number(aDate[0]);
+    m = Number(aDate[1]);
+    d = Number(aDate[2]);
+  }
+
   // if (y < 0 ) y += 1;
   //if (y === -1) y -= 1;
-  
+
   if (m < 3) {
-  	m += 12;
+    m += 12;
     y -= 1;
   }
-  //Math.trunc(x) 
-  jd =  Math.trunc(365.25*(y + 4716)) + Math.trunc(30.6001*(m + 1)) + d - 1524
-  
+  //Math.trunc(x)
+  jd =
+    Math.trunc(365.25 * (y + 4716)) + Math.trunc(30.6001 * (m + 1)) + d - 1524;
+
   return jd - 2451717;
-};
+}
 
 function addYears(sDate, year) {
   let aDate = sDate.split("-");
   let y, date;
   if (aDate.length > 3) {
     //We had a minus sign first = a BC date
-    y = -Number(aDate[1])
-    date = (y + year) + "-" + aDate[2] + "-" + aDate[3];
+    y = -Number(aDate[1]);
+    date = y + year + "-" + aDate[2] + "-" + aDate[3];
   } else {
-    y = Number(aDate[0])
-    date = (y + year) + "-" + aDate[1] + "-" + aDate[2];
-  };
-  return date
+    y = Number(aDate[0]);
+    date = y + year + "-" + aDate[1] + "-" + aDate[2];
+  }
+  return date;
 }
 
 //console.log(daysToDate(0))
@@ -2920,25 +1683,29 @@ function addYears(sDate, year) {
 function daysToDate(g) {
   if (g < -152556) return julianCalDayToDate(g); //Julian dates earlier than 1582-10-15
   g += 730597;
-  let y = Math.floor((10000*g + 14780)/3652425);
-  let ddd = g - (365*y + Math.floor(y/4) - Math.floor(y/100) + Math.floor(y/400));
+  let y = Math.floor((10000 * g + 14780) / 3652425);
+  let ddd =
+    g -
+    (365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400));
   if (ddd < 0) {
-    y = y - 1
-    ddd = g - (365*y + Math.floor(y/4) - Math.floor(y/100) + Math.floor(y/400));
-  };
-  let mi = Math.floor((100*ddd + 52)/3060);
-  let mm = (mi + 2)%12 + 1
-  y = y + Math.floor((mi + 2)/12);
-  let dd = ddd - Math.floor((mi*306 + 5)/10) + 1
-  
+    y = y - 1;
+    ddd =
+      g -
+      (365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400));
+  }
+  let mi = Math.floor((100 * ddd + 52) / 3060);
+  let mm = ((mi + 2) % 12) + 1;
+  y = y + Math.floor((mi + 2) / 12);
+  let dd = ddd - Math.floor((mi * 306 + 5) / 10) + 1;
+
   mm = ("0" + mm).slice(-2);
   dd = ("0" + dd).slice(-2);
-  
+
   return y + "-" + mm + "-" + dd;
-};
+}
 
 function julianCalDayToDate(g) {
-  var jDay = g + 2451717 //+ 10;
+  var jDay = g + 2451717; //+ 10;
   var z = Math.floor(jDay - 1721116.5);
   var r = jDay - 1721116.5 - z;
   var year = Math.floor((z - 0.25) / 365.25);
@@ -2946,95 +1713,125 @@ function julianCalDayToDate(g) {
   var month = Math.trunc((5 * c + 456) / 153);
   var day = c - Math.trunc((153 * month - 457) / 5) + r - 0.5;
   if (month > 12) {
-  	year = year + 1;
-    month = month -12;
+    year = year + 1;
+    month = month - 12;
   }
   month = ("0" + month).slice(-2);
   day = ("0" + day).slice(-2);
   // if (year <= 0) year -= 1;
-  return year + "-" + month + "-" + day
-};
+  return year + "-" + month + "-" + day;
+}
 
 //Returns the angle from the sun to targetPlanet as viewed from earth using the cosine rule.
-function getElongationFromSun(targetPlanet)
-{
-  var sunPosition=new THREE.Vector3();
-  var earthPosition=new THREE.Vector3();
-  var targetPlanetPosition=new THREE.Vector3();
+function getElongationFromSun(targetPlanet) {
+  var sunPosition = new THREE.Vector3();
+  var earthPosition = new THREE.Vector3();
+  var targetPlanetPosition = new THREE.Vector3();
   sun.planetObj.getWorldPosition(sunPosition);
   earth.planetObj.getWorldPosition(earthPosition);
   targetPlanet.planetObj.getWorldPosition(targetPlanetPosition);
 
-  var earthSunDistance=earthPosition.distanceTo(sunPosition);
-  var earthTargetPlanetDistance=earthPosition.distanceTo(targetPlanetPosition);
-  var sunTargetPlanetDistance=sunPosition.distanceTo(targetPlanetPosition);
-	
-  var numerator=(Math.pow(earthSunDistance,2)+Math.pow(earthTargetPlanetDistance,2))-Math.pow(sunTargetPlanetDistance,2);
-  var denominator=2.0*earthSunDistance*earthTargetPlanetDistance;
-  const elongationRadians=Math.acos(numerator/denominator);
-  return (180.0*elongationRadians)/Math.PI;
-};
+  var earthSunDistance = earthPosition.distanceTo(sunPosition);
+  var earthTargetPlanetDistance =
+    earthPosition.distanceTo(targetPlanetPosition);
+  var sunTargetPlanetDistance = sunPosition.distanceTo(targetPlanetPosition);
 
-function updateElongations()
-{
-  o["moonElongation"]=getElongationFromSun(moon);
-  o["mercuryElongation"]=getElongationFromSun(mercury);
-  o["venusElongation"]=getElongationFromSun(venus);
-  o["marsElongation"]=getElongationFromSun(mars);
-  o["jupiterElongation"]=getElongationFromSun(jupiter);
-  o["saturnElongation"]=getElongationFromSun(saturnus);
-};
+  var numerator =
+    Math.pow(earthSunDistance, 2) +
+    Math.pow(earthTargetPlanetDistance, 2) -
+    Math.pow(sunTargetPlanetDistance, 2);
+  var denominator = 2.0 * earthSunDistance * earthTargetPlanetDistance;
+  const elongationRadians = Math.acos(numerator / denominator);
+  return (180.0 * elongationRadians) / Math.PI;
+}
 
+function updateElongations() {
+  o["moonElongation"] = getElongationFromSun(moon);
+  o["mercuryElongation"] = getElongationFromSun(mercury);
+  o["venusElongation"] = getElongationFromSun(venus);
+  o["marsElongation"] = getElongationFromSun(mars);
+  o["jupiterElongation"] = getElongationFromSun(jupiter);
+  o["saturnElongation"] = getElongationFromSun(saturnus);
+}
 
 //CREATE PLANETS
 
-function createPlanet (pd) { //pd = Planet Data
+function createPlanet(pd) {
+  //pd = Planet Data
   const orbitContainer = new THREE.Object3D();
-  orbitContainer.rotation.x = pd.orbitTilta * (Math.PI/180);
-  orbitContainer.rotation.z = pd.orbitTiltb * (Math.PI/180);
+  orbitContainer.rotation.x = pd.orbitTilta * (Math.PI / 180);
+  orbitContainer.rotation.z = pd.orbitTiltb * (Math.PI / 180);
   orbitContainer.position.x = pd.orbitCentera;
   orbitContainer.position.z = pd.orbitCenterb;
   orbitContainer.position.y = pd.orbitCenterc;
-  
+
   const orbit = new THREE.Object3D();
   const geometry = new THREE.CircleGeometry(pd.orbitRadius, 100);
   // geometry.vertices.shift();
-  
-  const line = new THREE.LineLoop( geometry, new THREE.LineBasicMaterial({color: pd.color, transparent: true, opacity : 0.4} ));
-  line.rotation.x = Math.PI/2;
+
+  const line = new THREE.LineLoop(
+    geometry,
+    new THREE.LineBasicMaterial({
+      color: pd.color,
+      transparent: true,
+      opacity: 0.4,
+    })
+  );
+  line.rotation.x = Math.PI / 2;
   orbit.add(line);
 
-  let planetMesh
+  let planetMesh;
   if (pd.emissive) {
-    planetMesh = new THREE.MeshPhongMaterial({color: pd.color, emissive: pd.color, emissiveIntensity: 2});
+    planetMesh = new THREE.MeshPhongMaterial({
+      color: pd.color,
+      emissive: pd.color,
+      emissiveIntensity: 2,
+    });
   } else {
-    if (pd.planetColor) { //Halleys
-      planetMesh = new THREE.MeshPhongMaterial({color: pd.planetColor, emissive: pd.planetColor, emissiveIntensity: 2});
+    if (pd.planetColor) {
+      //Halleys
+      planetMesh = new THREE.MeshPhongMaterial({
+        color: pd.planetColor,
+        emissive: pd.planetColor,
+        emissiveIntensity: 2,
+      });
     } else {
       // planetMesh = new THREE.MeshPhongMaterial({color: pd.color});
       // planetMesh = new THREE.MeshPhongMaterial();
       planetMesh = new THREE.MeshNormalMaterial();
     }
   }
-  
+
   if (pd.textureUrl) {
-    const texture = new THREE.TextureLoader().load(pd.textureUrl)
+    const texture = new THREE.TextureLoader().load(pd.textureUrl);
     texture.colorSpace = THREE.SRGBColorSpace;
     if (pd.textureTransparency) {
-      planetMesh = new THREE.MeshPhongMaterial({ map: texture, bumpScale: 0.05, specular: new THREE.Color('#190909'), transparent: true, opacity: pd.textureTransparency, });
-
+      planetMesh = new THREE.MeshPhongMaterial({
+        map: texture,
+        bumpScale: 0.05,
+        specular: new THREE.Color("#190909"),
+        transparent: true,
+        opacity: pd.textureTransparency,
+      });
     } else {
-      planetMesh = new THREE.MeshPhongMaterial({ map: texture, bumpScale: 0.05, specular: new THREE.Color('#190909') });
+      planetMesh = new THREE.MeshPhongMaterial({
+        map: texture,
+        bumpScale: 0.05,
+        specular: new THREE.Color("#190909"),
+      });
       // planetMesh = new THREE.MeshPhongMaterial({ map: texture});
     }
-
   }
   if (pd.sphereSegments) {
     var planet = new THREE.Mesh(
-    new THREE.SphereGeometry(pd.size, pd.sphereSegments, pd.sphereSegments), planetMesh);  
+      new THREE.SphereGeometry(pd.size, pd.sphereSegments, pd.sphereSegments),
+      planetMesh
+    );
   } else {
     var planet = new THREE.Mesh(
-    new THREE.SphereGeometry(pd.size, 32, 32), planetMesh);
+      new THREE.SphereGeometry(pd.size, 32, 32),
+      planetMesh
+    );
   }
 
   var pivot = new THREE.Object3D();
@@ -3043,9 +1840,9 @@ function createPlanet (pd) { //pd = Planet Data
 
   var rotationAxis = new THREE.Object3D();
   rotationAxis.position.set(pd.orbitRadius, 0.0, 0.0);
-  rotationAxis.rotation.z = pd.tilt * (Math.PI/180)
+  rotationAxis.rotation.z = pd.tilt * (Math.PI / 180);
   if (pd.tiltb) {
-    rotationAxis.rotation.x = pd.tiltb * (Math.PI/180)
+    rotationAxis.rotation.x = pd.tiltb * (Math.PI / 180);
   }
 
   // if (pd.ringUrl) {
@@ -3063,15 +1860,13 @@ function createPlanet (pd) { //pd = Planet Data
   // nameTag.scale.set(10,10,10)
   // rotationAxis.add(nameTag);
 
-  
-  
   orbit.add(rotationAxis);
   orbitContainer.add(orbit);
 
   if (pd.axisHelper) {
-    pd.axisHelper = new THREE.AxesHelper(pd.size*3)
+    pd.axisHelper = new THREE.AxesHelper(pd.size * 3);
     planet.add(pd.axisHelper);
-  }  
+  }
   pd.containerObj = orbitContainer;
   pd.orbitObj = orbit;
   pd.orbitLineObj = line;
@@ -3082,66 +1877,50 @@ function createPlanet (pd) { //pd = Planet Data
   scene.add(orbitContainer);
 }
 
-function updatePlanet (pd) { 
-  pd.containerObj.rotation.x = pd.orbitTilta * (Math.PI/180);
-  pd.containerObj.rotation.z = pd.orbitTiltb * (Math.PI/180);
+function updatePlanet(pd) {
+  pd.containerObj.rotation.x = pd.orbitTilta * (Math.PI / 180);
+  pd.containerObj.rotation.z = pd.orbitTiltb * (Math.PI / 180);
   pd.containerObj.position.x = pd.orbitCentera;
   pd.containerObj.position.z = pd.orbitCenterb;
   pd.containerObj.position.y = pd.orbitCenterc;
-  pd.rotationAxis.rotation.z = pd.tilt * (Math.PI/180)
-  if (pd.hasOwnProperty('tiltb')) {
-    pd.rotationAxis.rotation.x = pd.tiltb * (Math.PI/180)
+  pd.rotationAxis.rotation.z = pd.tilt * (Math.PI / 180);
+  if (pd.hasOwnProperty("tiltb")) {
+    pd.rotationAxis.rotation.x = pd.tiltb * (Math.PI / 180);
   }
-
 }
 
-function createCelestialSphere(radius) {
-  const geometry1 = new THREE.SphereGeometry( radius, 40, 40 );
-  const material1 = new THREE.MeshNormalMaterial( { transparent: true, wireframe: false, opacity: 0 , depthWrite: false} );
-  const mesh1 = new THREE.Mesh( geometry1, material1 );
-  const edgesGeometry = new THREE.EdgesGeometry( geometry1 );
-  const wireframe = new THREE.LineSegments( edgesGeometry, new THREE.LineBasicMaterial( { color: 0x666666, transparent: true, opacity: 0.3 } ) );
-  wireframe.add(new THREE.PolarGridHelper( radius, 4, 1, 60, 0x0000ff, 0x0000ff ));
-
-  mesh1.add( wireframe );
-  mesh1.wireFrameObj = wireframe;
-  return mesh1;
-}
-
-  function showHideObject(obj) {
-    obj.orbitLineObj.visible = obj.visible;
-    obj.planetMesh.visible = obj.visible;
-    if (obj.axisHelper) {
-      if (obj.visible) {
-        obj.axisHelper.visible = o['Axis helpers']
-      } else {
-        obj.axisHelper.visible = obj.visible;                       
-      }
-    }  
-    if (obj.ringObj) {
+function showHideObject(obj) {
+  obj.orbitLineObj.visible = obj.visible;
+  obj.planetMesh.visible = obj.visible;
+  if (obj.axisHelper) {
+    if (obj.visible) {
+      obj.axisHelper.visible = o["Axis helpers"];
+    } else {
+      obj.axisHelper.visible = obj.visible;
+    }
+  }
+  if (obj.ringObj) {
     obj.ringObj.visible = obj.visible;
   }
 }
 
 function showHideAxisHelpers() {
-  planets.forEach(obj => {
+  planets.forEach((obj) => {
     if (obj.axisHelper) {
-      obj.axisHelper.visible = o['Axis helpers'];
-    }  
+      obj.axisHelper.visible = o["Axis helpers"];
+    }
   });
 }
 
 function showHideOrbits() {
-  planets.forEach(obj => {
+  planets.forEach((obj) => {
     if (obj.orbitLineObj && !obj.isDeferent) {
-       if (obj.visible) {
-        obj.orbitLineObj.visible = o['Orbits'];
-       }
-    }  
+      if (obj.visible) {
+        obj.orbitLineObj.visible = o["Orbits"];
+      }
+    }
   });
 }
-
-
 
 // function showHideStars() {
 //   stars.forEach(obj => {
@@ -3150,28 +1929,26 @@ function showHideOrbits() {
 // };
 
 function showHideInfoText() {
-    var x = document.getElementById("info");
-  if(o.infotext) {
-    x.style.display = "block";    
+  var x = document.getElementById("info");
+  if (o.infotext) {
+    x.style.display = "block";
   } else {
-    x.style.display = "none";    
+    x.style.display = "none";
   }
   // if (x.style.display === "none") {
   //   x.style.display = "block";
   // } else {
   //   x.style.display = "none";
   // }
-};
+}
 
-
-
-function randomPointInSphere( radius ) {
+function randomPointInSphere(radius) {
   const v = new THREE.Vector3();
 
-  const x = THREE.Math.randFloat( -1, 1 );
-  const y = THREE.Math.randFloat( -1, 1 );
-  const z = THREE.Math.randFloat( -1, 1 );
-  const normalizationFactor = 1 / Math.sqrt( x * x + y * y + z * z );
+  const x = THREE.Math.randFloat(-1, 1);
+  const y = THREE.Math.randFloat(-1, 1);
+  const z = THREE.Math.randFloat(-1, 1);
+  const normalizationFactor = 1 / Math.sqrt(x * x + y * y + z * z);
 
   v.x = x * normalizationFactor * radius;
   v.y = y * normalizationFactor * radius;
@@ -3180,36 +1957,38 @@ function randomPointInSphere( radius ) {
   return v;
 }
 
-function createStarfield() {  
+function createStarfield() {
   const geometry = new THREE.BufferGeometry();
   var positions = [];
 
-  for (var i = 0; i < 100000; i ++ ) {
-
-    var vertex = randomPointInSphere( 1000000 );
-    positions.push( vertex.x, vertex.y, vertex.z );
-
+  for (var i = 0; i < 100000; i++) {
+    var vertex = randomPointInSphere(1000000);
+    positions.push(vertex.x, vertex.y, vertex.z);
   }
 
-  geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+  geometry.addAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(positions, 3)
+  );
 
-  const material = new THREE.PointsMaterial( { color: 0x888888, size: 0.05, sizeAttenuation: false} );
+  const material = new THREE.PointsMaterial({
+    color: 0x888888,
+    size: 0.05,
+    sizeAttenuation: false,
+  });
   //material = new THREE.PointsMaterial( { color: 0xffffff, size: 0.01 } );
   particles = new THREE.Points(geometry, material);
-  scene.add( particles );
+  scene.add(particles);
 }
 
 function setStarDistance() {
-  stars.forEach(obj => {
-    obj.starObj.position.x = obj.dist * o['Star distance'];
-  })
-
+  stars.forEach((obj) => {
+    obj.starObj.position.x = obj.dist * o["Star distance"];
+  });
 }
 
-
-
 // function createRings(radius, segments, texture) {
-//   return new THREE.Mesh(new THREE.XRingGeometry(1.2 * radius, 2 * radius, 2 * segments, 5, 0, Math.PI * 2), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true, opacity: 0.6 })); 
+//   return new THREE.Mesh(new THREE.XRingGeometry(1.2 * radius, 2 * radius, 2 * segments, 5, 0, Math.PI * 2), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
 // }
 
 // function initXRingGeometry() {
@@ -3217,7 +1996,7 @@ function setStarDistance() {
 //  * @author Kaleb Murphy
 //  * Modified uvs.push on line no. 42.
 //  */
-  
+
 //  //This allows textures to be added to a disc in a way that makes planetary ring look nice
 //   THREE.XRingGeometry = function ( innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength ) {
 
@@ -3322,99 +2101,122 @@ function setStarDistance() {
 //         context.fillStyle = "rgba("+textColor.r+", "+textColor.g+", "+textColor.b+", 1.0)";
 //         context.fillText( message, borderThickness, fontsize + borderThickness);
 
-//         var texture = new THREE.Texture(canvas) 
+//         var texture = new THREE.Texture(canvas)
 //         texture.needsUpdate = true;
 //         var spriteMaterial = new THREE.SpriteMaterial( { map: texture} );
 //         var sprite = new THREE.Sprite( spriteMaterial );
 //         sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
-//         return sprite;  
+//         return sprite;
 //     }
 
-function getCircularText(text, diameter, startAngle, align, textInside, inwardFacing, fName, fSize, kerning) {
-    // text:         The text to be displayed in circular fashion
-    // diameter:     The diameter of the circle around which the text will
-    //               be displayed (inside or outside)
-    // startAngle:   In degrees, Where the text will be shown. 0 degrees
-    //               if the top of the circle
-    // align:        Positions text to left right or center of startAngle
-    // textInside:   true to show inside the diameter. False to show outside
-    // inwardFacing: true for base of text facing inward. false for outward
-    // fName:        name of font family. Make sure it is loaded
-    // fSize:        size of font family. Don't forget to include units
-    // kearning:     0 for normal gap between letters. positive or
-    //               negative number to expand/compact gap in pixels
- //------------------------------------------------------------------------
+function getCircularText(
+  text,
+  diameter,
+  startAngle,
+  align,
+  textInside,
+  inwardFacing,
+  fName,
+  fSize,
+  kerning
+) {
+  // text:         The text to be displayed in circular fashion
+  // diameter:     The diameter of the circle around which the text will
+  //               be displayed (inside or outside)
+  // startAngle:   In degrees, Where the text will be shown. 0 degrees
+  //               if the top of the circle
+  // align:        Positions text to left right or center of startAngle
+  // textInside:   true to show inside the diameter. False to show outside
+  // inwardFacing: true for base of text facing inward. false for outward
+  // fName:        name of font family. Make sure it is loaded
+  // fSize:        size of font family. Don't forget to include units
+  // kearning:     0 for normal gap between letters. positive or
+  //               negative number to expand/compact gap in pixels
+  //------------------------------------------------------------------------
 
-    // declare and intialize canvas, reference, and useful variables
-    align = align.toLowerCase();
-    var mainCanvas = document.createElement('canvas');
-    var ctxRef = mainCanvas.getContext('2d');
-    var clockwise = align == "right" ? 1 : -1; // draw clockwise for aligned right. Else Anticlockwise
-    startAngle = startAngle * (Math.PI / 180); // convert to radians
+  // declare and intialize canvas, reference, and useful variables
+  align = align.toLowerCase();
+  var mainCanvas = document.createElement("canvas");
+  var ctxRef = mainCanvas.getContext("2d");
+  var clockwise = align == "right" ? 1 : -1; // draw clockwise for aligned right. Else Anticlockwise
+  startAngle = startAngle * (Math.PI / 180); // convert to radians
 
-    // calculate height of the font. Many ways to do this
-    // you can replace with your own!
-    var div = document.createElement("div");
-    div.innerHTML = text;
-    div.style.position = 'absolute';
-    div.style.top = '-10000px';
-    div.style.left = '-10000px';
-    div.style.fontFamily = fName;
-    div.style.fontSize = fSize;
-    document.body.appendChild(div);
-    var textHeight = div.offsetHeight;
-    document.body.removeChild(div);
-    
-    // in cases where we are drawing outside diameter,
-    // expand diameter to handle it
-    if (!textInside) diameter += textHeight * 2;
+  // calculate height of the font. Many ways to do this
+  // you can replace with your own!
+  var div = document.createElement("div");
+  div.innerHTML = text;
+  div.style.position = "absolute";
+  div.style.top = "-10000px";
+  div.style.left = "-10000px";
+  div.style.fontFamily = fName;
+  div.style.fontSize = fSize;
+  document.body.appendChild(div);
+  var textHeight = div.offsetHeight;
+  document.body.removeChild(div);
 
-    mainCanvas.width = diameter;
-    mainCanvas.height = diameter;
-    // omit next line for transparent background
-    //mainCanvas.style.backgroundColor = 'lightgray'; 
-    ctxRef.fillStyle = 'grey';
-    ctxRef.font = fSize + ' ' + fName;
-    
-    // Reverse letters for align Left inward, align right outward 
-    // and align center inward.
-    if (((["left", "center"].indexOf(align) > -1) && inwardFacing) || (align == "right" && !inwardFacing)) text = text.split("").reverse().join(""); 
-    
-    // Setup letters and positioning
-    ctxRef.translate(diameter / 2, diameter / 2); // Move to center
-    startAngle += (Math.PI * !inwardFacing); // Rotate 180 if outward
-    ctxRef.textBaseline = 'middle'; // Ensure we draw in exact center
-    ctxRef.textAlign = 'center'; // Ensure we draw in exact center
+  // in cases where we are drawing outside diameter,
+  // expand diameter to handle it
+  if (!textInside) diameter += textHeight * 2;
 
-    // rotate 50% of total angle for center alignment
-    if (align == "center") {
-        for (var j = 0; j < text.length; j++) {
-            var charWid = ctxRef.measureText(text[j]).width;
-            startAngle += ((charWid + (j == text.length-1 ? 0 : kerning)) / (diameter / 2 - textHeight)) / 2 * -clockwise;
-        }
-    }
+  mainCanvas.width = diameter;
+  mainCanvas.height = diameter;
+  // omit next line for transparent background
+  //mainCanvas.style.backgroundColor = 'lightgray';
+  ctxRef.fillStyle = "grey";
+  ctxRef.font = fSize + " " + fName;
 
-    // Phew... now rotate into final start position
-    ctxRef.rotate(startAngle);
+  // Reverse letters for align Left inward, align right outward
+  // and align center inward.
+  if (
+    (["left", "center"].indexOf(align) > -1 && inwardFacing) ||
+    (align == "right" && !inwardFacing)
+  )
+    text = text.split("").reverse().join("");
 
-    // Now for the fun bit: draw, rotate, and repeat
+  // Setup letters and positioning
+  ctxRef.translate(diameter / 2, diameter / 2); // Move to center
+  startAngle += Math.PI * !inwardFacing; // Rotate 180 if outward
+  ctxRef.textBaseline = "middle"; // Ensure we draw in exact center
+  ctxRef.textAlign = "center"; // Ensure we draw in exact center
+
+  // rotate 50% of total angle for center alignment
+  if (align == "center") {
     for (var j = 0; j < text.length; j++) {
-        var charWid = ctxRef.measureText(text[j]).width; // half letter
-        // rotate half letter
-        ctxRef.rotate((charWid/2) / (diameter / 2 - textHeight) * clockwise); 
-        // draw the character at "top" or "bottom" 
-        // depending on inward or outward facing
-        ctxRef.fillText(text[j], 0, (inwardFacing ? 1 : -1) * (0 - diameter / 2 + textHeight / 2));
-
-        ctxRef.rotate((charWid/2 + kerning) / (diameter / 2 - textHeight) * clockwise); // rotate half letter
+      var charWid = ctxRef.measureText(text[j]).width;
+      startAngle +=
+        ((charWid + (j == text.length - 1 ? 0 : kerning)) /
+          (diameter / 2 - textHeight) /
+          2) *
+        -clockwise;
     }
+  }
 
-    // Return it
-    return (mainCanvas);
+  // Phew... now rotate into final start position
+  ctxRef.rotate(startAngle);
+
+  // Now for the fun bit: draw, rotate, and repeat
+  for (var j = 0; j < text.length; j++) {
+    var charWid = ctxRef.measureText(text[j]).width; // half letter
+    // rotate half letter
+    ctxRef.rotate((charWid / 2 / (diameter / 2 - textHeight)) * clockwise);
+    // draw the character at "top" or "bottom"
+    // depending on inward or outward facing
+    ctxRef.fillText(
+      text[j],
+      0,
+      (inwardFacing ? 1 : -1) * (0 - diameter / 2 + textHeight / 2)
+    );
+
+    ctxRef.rotate(
+      ((charWid / 2 + kerning) / (diameter / 2 - textHeight)) * clockwise
+    ); // rotate half letter
+  }
+
+  // Return it
+  return mainCanvas;
 }
 
- function colorTemperature2rgb(kelvin) {
-
+function colorTemperature2rgb(kelvin) {
   var temperature = kelvin / 100.0;
   var red, green, blue;
 
@@ -3427,7 +2229,10 @@ function getCircularText(text, diameter, startAngle, align, textInside, inwardFa
     // c -> -40.25366309332127
     //x -> (kelvin/100) - 55}
     red = temperature - 55.0;
-    red = 351.97690566805693+ 0.114206453784165 * red - 40.25366309332127 * Math.log(red);
+    red =
+      351.97690566805693 +
+      0.114206453784165 * red -
+      40.25366309332127 * Math.log(red);
     if (red < 0) red = 0;
     if (red > 255) red = 255;
   }
@@ -3435,29 +2240,31 @@ function getCircularText(text, diameter, startAngle, align, textInside, inwardFa
   /* Calculate green */
 
   if (temperature < 66.0) {
-
     // a + b x + c Log[x] /.
     // {a -> -155.25485562709179`,
     // b -> -0.44596950469579133`,
     // c -> 104.49216199393888`,
     // x -> (kelvin/100) - 2}
     green = temperature - 2;
-    green = -155.25485562709179 - 0.44596950469579133 * green + 104.49216199393888 * Math.log(green);
+    green =
+      -155.25485562709179 -
+      0.44596950469579133 * green +
+      104.49216199393888 * Math.log(green);
     if (green < 0) green = 0;
     if (green > 255) green = 255;
-
   } else {
-
     // a + b x + c Log[x] /.
     // {a -> 325.4494125711974`,
     // b -> 0.07943456536662342`,
     // c -> -28.0852963507957`,
     // x -> (kelvin/100) - 50}
     green = temperature - 50.0;
-    green = 325.4494125711974 + 0.07943456536662342 * green - 28.0852963507957 * Math.log(green);
+    green =
+      325.4494125711974 +
+      0.07943456536662342 * green -
+      28.0852963507957 * Math.log(green);
     if (green < 0) green = 0;
     if (green > 255) green = 255;
-
   }
 
   /* Calculate blue */
@@ -3465,24 +2272,33 @@ function getCircularText(text, diameter, startAngle, align, textInside, inwardFa
   if (temperature >= 66.0) {
     blue = 255;
   } else {
-
     if (temperature <= 20.0) {
       blue = 0;
     } else {
-
       // a + b x + c Log[x] /.
       // {a -> -254.76935184120902`,
       // b -> 0.8274096064007395`,
       // c -> 115.67994401066147`,
       // x -> kelvin/100 - 10}
       blue = temperature - 10;
-      blue = -254.76935184120902 + 0.8274096064007395 * blue + 115.67994401066147 * Math.log(blue);
+      blue =
+        -254.76935184120902 +
+        0.8274096064007395 * blue +
+        115.67994401066147 * Math.log(blue);
       if (blue < 0) blue = 0;
       if (blue > 255) blue = 255;
     }
   }
   //  return {red: Math.round(red), blue: Math.round(blue), green: Math.round(green)};
 
-   //const white = new THREE.Color('rgb(255,255,255)');
-  return 'rgb(' + Math.round(red) + ',' + Math.round(green) + ',' + Math.round(blue) + ')'; 
+  //const white = new THREE.Color('rgb(255,255,255)');
+  return (
+    "rgb(" +
+    Math.round(red) +
+    "," +
+    Math.round(green) +
+    "," +
+    Math.round(blue) +
+    ")"
+  );
 }
