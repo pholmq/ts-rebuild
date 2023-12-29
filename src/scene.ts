@@ -7,6 +7,10 @@ import * as dat from 'dat.gui';
 import * as THREE from 'three';
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import Stats from 'three/examples/jsm/libs/stats.module'
+
+import {yearLength, earthRotations, sDay, sYear, sMonth, sWeek, sHour, sMinute, sSecond} from './timeConstants'
+
+
 //*******************************************************************************
 //CAUTION CHANGE ONLY defaultSettings!!!! 
 //THESE VALUES WILL OVERRIDE THOSE IN THE PLANETS.
@@ -420,18 +424,18 @@ const defaultSettings =
   "orbitTilta": 0,
   "orbitTiltb": 0
 }]
-//DEFINE TIME CONSTANTS
-const yearLength = 365.2425
-const earthRotations = 366.2425
+// //DEFINE TIME CONSTANTS
+// const yearLength = 365.2425
+// const earthRotations = 366.2425
 
 
-const sDay = 1/yearLength;
-const sYear = sDay*365
-const sMonth = sDay*30;
-const sWeek = sDay*7;
-const sHour = sDay/24;
-const sMinute = sHour/60;
-const sSecond = sMinute/60;
+// const sDay = 1/yearLength;
+// const sYear = sDay*365
+// const sMonth = sDay*30;
+// const sWeek = sDay*7;
+// const sHour = sDay/24;
+// const sMinute = sHour/60;
+// const sSecond = sMinute/60;
 
 //*************************************************************
 //DEFINE PLANETS (Stars, Moons and deferents conunt as planets)
@@ -2331,7 +2335,7 @@ document.body.appendChild( stats.dom )
 if (!o.Perfomance) stats.dom.style.visibility = 'hidden';
 
 // stats.dom.container.style.visibility = 'hidden';
-// const clock = new THREE.Clock(); 
+const clock = new THREE.Clock(); 
 
 window.addEventListener('resize', onWindowResize, false);
 onWindowResize();
