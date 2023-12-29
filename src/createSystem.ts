@@ -259,7 +259,7 @@ var mercury = {
   containerObj: <THREE.Object3D>null,
   orbitObj: "",
   planetObj: "",
-  pivotObj: "",
+  pivotObj: <THREE.Object3D>null,
   axisHelper: true,
 
   traceLength: sYear * 14,
@@ -348,7 +348,7 @@ var venus = {
   containerObj: <THREE.Object3D>null,
   orbitObj: "",
   planetObj: "",
-  pivotObj: "",
+  pivotObj: <THREE.Object3D>null,
   axisHelper: true,
 
   traceOn: false,
@@ -461,7 +461,7 @@ var phobos = {
   containerObj: <THREE.Object3D>null,
   orbitObj: "",
   planetObj: "",
-  pivotObj: "",
+  pivotObj: <THREE.Object3D>null,
 };
 
 var deimos = {
@@ -484,7 +484,7 @@ var deimos = {
   containerObj: <THREE.Object3D>null,
   orbitObj: "",
   planetObj: "",
-  pivotObj: "",
+  pivotObj: <THREE.Object3D>null,
 };
 
 var jupiterDef = {
@@ -535,7 +535,7 @@ var jupiter = {
   containerObj: <THREE.Object3D>null,
   orbitObj: "",
   planetObj: "",
-  pivotObj: "",
+  pivotObj: <THREE.Object3D>null,
   axisHelper: true,
 
   traceOn: false,
@@ -595,7 +595,7 @@ var saturnus = {
   containerObj: <THREE.Object3D>null,
   orbitObj: "",
   planetObj: "",
-  pivotObj: "",
+  pivotObj: <THREE.Object3D>null,
   axisHelper: true,
 
   traceOn: false,
@@ -655,7 +655,7 @@ var uranus = {
   containerObj: <THREE.Object3D>null,
   orbitObj: "",
   planetObj: "",
-  pivotObj: "",
+  pivotObj: <THREE.Object3D>null,
   axisHelper: true,
   traceOn: false,
   traceLine: false,
@@ -712,7 +712,7 @@ var neptune = {
   containerObj: <THREE.Object3D>null,
   orbitObj: "",
   planetObj: "",
-  pivotObj: "",
+  pivotObj: <THREE.Object3D>null,
   axisHelper: true,
 
   traceOn: false,
@@ -769,7 +769,7 @@ var halleys = {
   containerObj: <THREE.Object3D>null,
   orbitObj: "",
   planetObj: "",
-  pivotObj: "",
+  pivotObj: <THREE.Object3D>null,
   axisHelper: true,
 
   traceOn: false,
@@ -854,7 +854,7 @@ var eros = {
   containerObj: <THREE.Object3D>null,
   orbitObj: "",
   planetObj: "",
-  pivotObj: "",
+  pivotObj: <THREE.Object3D>null,
   axisHelper: true,
 
   traceOn: false,
