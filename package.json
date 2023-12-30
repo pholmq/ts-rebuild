@@ -19,6 +19,7 @@
     "dat.gui": "^0.7.9",
     "file-saver": "^2.0.5",
     "lil-gui": "^0.19.1",
-    "three": "^0.159.0"
+    "three": "^0.159.0",
+    "three-fatline": "^0.6.1"
   }
 }

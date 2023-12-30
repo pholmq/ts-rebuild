@@ -1,4 +1,7 @@
 import * as THREE from "three";
+// import { LineGeometry } from "three/addons/lines/LineGeometry";
+import { Line2, LineGeometry, LineMaterial } from "three-fatline";
+
 // import system from "./system.json";
 import defaultSettings from "./systemSettings.json";
 
@@ -910,19 +913,34 @@ function createPlanet(pd) {
   orbitContainer.position.z = pd.orbitCenterb;
   orbitContainer.position.y = pd.orbitCenterc;
 
-  const orbit = new THREE.Object3D();
-  const geometry = new THREE.CircleGeometry(pd.orbitRadius, 100);
-  // geometry.vertices.shift();
+  const points = [];
 
-  const line = new THREE.LineLoop(
-    geometry,
-    new THREE.LineBasicMaterial({
-      color: pd.color,
-      transparent: true,
-      opacity: 0.4,
-    })
-  );
+  for (let i = 0; i <= 360; i++) {
+    points.push(
+      Math.sin(i * (Math.PI / 180)) * pd.orbitRadius,
+      Math.cos(i * (Math.PI / 180)) * pd.orbitRadius,
+      0
+    );
+  }
+
+  const lineGeometry = new LineGeometry();
+  lineGeometry.setPositions(points);
+  const lineMaterial = new LineMaterial({
+    color: pd.color,
+    linewidth: 2, // px
+    // resolution: new THREE.Vector2(640, 480), // resolution of the viewport
+    // resolution: new THREE.Vector2(screen.width, screen.height), // resolution of the viewport
+    resolution: new THREE.Vector2(window.innerWidth, window.innerHeight), // resolution of the viewport
+    // dashed, dashScale, dashSize, gapSize
+  });
+
+  const line = new Line2(lineGeometry, lineMaterial);
+  // line.computeLineDistances();
+
+  const orbit = new THREE.Object3D();
+
   line.rotation.x = Math.PI / 2;
+
   orbit.add(line);
 
   let planetMesh;
