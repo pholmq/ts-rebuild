@@ -6,6 +6,7 @@ import * as dat from "dat.gui";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
+import { LineGeometry } from "three-fatline";
 
 import {
   sDay,
@@ -17,6 +18,7 @@ import {
   sSecond,
 } from "./timeConstants";
 import createSystem from "./createSystem";
+import planetsTrace from "./tracePlanets";
 
 //*************************************************************
 //GLOBAL and GUI SETTINGS
@@ -1081,8 +1083,16 @@ renderer.render(scene, camera); //renderer needs to be called otherwise the posi
 const centerPosVec = new THREE.Vector3();
 const starPosVec = new THREE.Vector3();
 const scaleVec = new THREE.Vector3();
+
+/*
+🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰
+🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰
+🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰
+🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰
+*/
+
 //*************************************************************
-//THE RENDER LOOP
+//THE RENDER LOOP 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
 //*************************************************************
 function render() {
   requestAnimationFrame(render);
@@ -1117,7 +1127,10 @@ function render() {
   }
   //tracePlanet(mars, o.pos);
   // lineTrace(o.pos);
-  trace(o.pos);
+
+  // trace(o.pos);
+  planetsTrace(o.traceBtn, o.Lines, o.pos, tracePlanets, scene);
+
   moveModel(o.pos);
   updateElongations();
   updatePositions();
@@ -1232,7 +1245,9 @@ function drawSunLine() {
     color: 0xff0000,
   });
 
-  var geometry2 = new THREE.Geometry();
+  // var geometry2 = new THREE.Geometry();
+  var geometry2 = new THREE.BufferGeometry();
+  // var geometry2 = new LineGeometry();
   geometry2.vertices.push(
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3().setFromSpherical(sphericalPos)
@@ -1270,9 +1285,10 @@ function setTraceMaterial(obj) {
       ),
     });
 
-    lineGeometry = new THREE.Geometry();
+    lineGeometry = new THREE.BufferGeometry();
     obj.traceLine = new THREE.Points(lineGeometry, lineMaterial);
     obj.traceLine.sortParticles = true;
+    console.log(obj.traceLine.geometry);
     obj.traceLine.geometry.vertices.length = (
       obj.traceLength / obj.traceStep
     ).toFixed();
@@ -1752,129 +1768,6 @@ function updateElongations() {
   o["marsElongation"] = getElongationFromSun(mars);
   o["jupiterElongation"] = getElongationFromSun(jupiter);
   o["saturnElongation"] = getElongationFromSun(saturnus);
-}
-
-//CREATE PLANETS
-
-function createPlanet(pd) {
-  //pd = Planet Data
-  const orbitContainer = new THREE.Object3D();
-  orbitContainer.rotation.x = pd.orbitTilta * (Math.PI / 180);
-  orbitContainer.rotation.z = pd.orbitTiltb * (Math.PI / 180);
-  orbitContainer.position.x = pd.orbitCentera;
-  orbitContainer.position.z = pd.orbitCenterb;
-  orbitContainer.position.y = pd.orbitCenterc;
-
-  const orbit = new THREE.Object3D();
-  const geometry = new THREE.CircleGeometry(pd.orbitRadius, 100);
-  // geometry.vertices.shift();
-
-  const line = new THREE.LineLoop(
-    geometry,
-    new THREE.LineBasicMaterial({
-      color: pd.color,
-      transparent: true,
-      opacity: 0.4,
-    })
-  );
-  line.rotation.x = Math.PI / 2;
-  orbit.add(line);
-
-  let planetMesh;
-  if (pd.emissive) {
-    planetMesh = new THREE.MeshPhongMaterial({
-      color: pd.color,
-      emissive: pd.color,
-      emissiveIntensity: 2,
-    });
-  } else {
-    if (pd.planetColor) {
-      //Halleys
-      planetMesh = new THREE.MeshPhongMaterial({
-        color: pd.planetColor,
-        emissive: pd.planetColor,
-        emissiveIntensity: 2,
-      });
-    } else {
-      // planetMesh = new THREE.MeshPhongMaterial({color: pd.color});
-      // planetMesh = new THREE.MeshPhongMaterial();
-      planetMesh = new THREE.MeshNormalMaterial();
-    }
-  }
-
-  if (pd.textureUrl) {
-    const texture = new THREE.TextureLoader().load(pd.textureUrl);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    if (pd.textureTransparency) {
-      planetMesh = new THREE.MeshPhongMaterial({
-        map: texture,
-        bumpScale: 0.05,
-        specular: new THREE.Color("#190909"),
-        transparent: true,
-        opacity: pd.textureTransparency,
-      });
-    } else {
-      planetMesh = new THREE.MeshPhongMaterial({
-        map: texture,
-        bumpScale: 0.05,
-        specular: new THREE.Color("#190909"),
-      });
-      // planetMesh = new THREE.MeshPhongMaterial({ map: texture});
-    }
-  }
-  if (pd.sphereSegments) {
-    var planet = new THREE.Mesh(
-      new THREE.SphereGeometry(pd.size, pd.sphereSegments, pd.sphereSegments),
-      planetMesh
-    );
-  } else {
-    var planet = new THREE.Mesh(
-      new THREE.SphereGeometry(pd.size, 32, 32),
-      planetMesh
-    );
-  }
-
-  var pivot = new THREE.Object3D();
-  pivot.position.set(pd.orbitRadius, 0.0, 0.0);
-  orbit.add(pivot);
-
-  var rotationAxis = new THREE.Object3D();
-  rotationAxis.position.set(pd.orbitRadius, 0.0, 0.0);
-  rotationAxis.rotation.z = pd.tilt * (Math.PI / 180);
-  if (pd.tiltb) {
-    rotationAxis.rotation.x = pd.tiltb * (Math.PI / 180);
-  }
-
-  // if (pd.ringUrl) {
-  //   var texloader = new THREE.TextureLoader();
-  //   texloader.load(pd.ringUrl, function(tex) {
-  //     const ring = createRings(pd.ringSize, 32, tex)
-  //     rotationAxis.add(ring);
-  //     pd.ringObj = ring;
-  //   });
-  // };
-  rotationAxis.add(planet);
-
-  // const nameTag = createLabel(pd.name);
-  // nameTag.position.copy(rotationAxis.position)
-  // nameTag.scale.set(10,10,10)
-  // rotationAxis.add(nameTag);
-
-  orbit.add(rotationAxis);
-  orbitContainer.add(orbit);
-
-  if (pd.axisHelper) {
-    pd.axisHelper = new THREE.AxesHelper(pd.size * 3);
-    planet.add(pd.axisHelper);
-  }
-  pd.containerObj = orbitContainer;
-  pd.orbitObj = orbit;
-  pd.orbitLineObj = line;
-  pd.planetObj = planet;
-  pd.planetMesh = planetMesh;
-  pd.pivotObj = pivot;
-  pd.rotationAxis = rotationAxis;
-  scene.add(orbitContainer);
 }
 
 function updatePlanet(pd) {
