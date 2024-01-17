@@ -101,6 +101,7 @@ function tracePlanet(
     // const y = Math.random() * 300;
     // const z = Math.random() * 300;
     // obj.traceArray.push(x, y, z);
+    //
 
     obj.traceLine.geometry.setPositions(obj.traceArray);
     nextPos += obj.traceStep;
