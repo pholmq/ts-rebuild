@@ -764,16 +764,16 @@ function setupGUI() {
   let folderT = gui.addFolder("Trace");
   folderT
     .add(o, "traceSize", 0.1, 2)
-    .name("Dot size")
+    .name("Line width")
     .onChange(() => {
       changeTraceScale();
     });
 
-  folderT.add(o, "Lines").onFinishChange(() => {
-    tracePlanets.forEach((obj) => {
-      setTraceMaterial(obj);
-    });
-  });
+  // folderT.add(o, "Lines").onFinishChange(() => {
+  //   tracePlanets.forEach((obj) => {
+  //     setTraceMaterial(obj);
+  //   });
+  // });
 
   tracePlanets.forEach((obj) => {
     folderT
@@ -1129,7 +1129,7 @@ function render() {
   // lineTrace(o.pos);
 
   // trace(o.pos);
-  planetsTrace(o.traceBtn, o.Lines, o.pos, tracePlanets, scene);
+  planetsTrace(o.traceBtn, o.Lines, o.pos, planets, tracePlanets, scene, earth);
 
   moveModel(o.pos);
   updateElongations();
